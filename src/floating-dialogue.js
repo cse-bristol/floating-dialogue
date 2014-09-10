@@ -39,13 +39,14 @@ module.exports = {
 
     close: function(el, openButton) {
 	var closeButton = el.append("span")
-	    .classed("close-button", true)
-	    .style("font-size", "large")
-	    .style("position", "absolute")
-	    .style("top", "5px")
-	    .style("right", "5px")
-	    .style("opacity", "0.6")
-	    .html("❌");
+		.classed("close-button", true)
+		.style("font-size", "large")
+		.style("position", "absolute")
+		.style("top", "5px")
+		.style("right", "5px")
+		.style("opacity", "0.6")
+		.style("cursor", "pointer")
+		.html("❌");
 
 	if (openButton) {
 	    closeButton.on("click", makeToggleFunction(el, openButton));
