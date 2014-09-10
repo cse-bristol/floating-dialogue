@@ -36,6 +36,7 @@ module.exports = {
 		    };
 		})
 		.on("drag", function(d){
+		    d3.event.sourceEvent.preventDefault();
 		    el
 			.style("top", d3.event.y + "px")
 			.style("left", d3.event.x + "px");
@@ -48,6 +49,7 @@ module.exports = {
     open: function(el, button) {
 	button
 	    .classed("open-button", true)
+	    .style("cursor", "pointer")
 	    .on("click", makeToggleFunction(el, button));
     },
 
