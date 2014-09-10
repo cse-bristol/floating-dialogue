@@ -9,7 +9,7 @@ var makeToggleFunction = function(el, button) {
 	var wasVisible = (el.style("visibility") === "visible");
 	
 	button.classed("element-visible", wasVisible ? false : true);
-	el.style("visiblity", wasVisible ? "hidden" : "visible");
+	el.style("visibility", wasVisible ? "hidden" : "visible");
     };
 };
 
