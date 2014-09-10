@@ -17,19 +17,24 @@ var makeToggleFunction = function(el, button) {
  Provides some functions which can be applied to an HTML element.
  */
 module.exports = {
-    drag: d3.behavior.drag()
-	.origin(function(d){
-	    var el = d3.select(this);
-	    return {
-		"x" : parseInt(el.style("left")),
-		"y" : parseInt(el.style("top"))
-	    };
-	})
-	.on("drag", function(d){
-	    d3.select(this)
-		.style("top", d3.event.y + "px")
-		.style("left", d3.event.x + "px");
-	}),
+    drag: function(el) {
+	el.call(
+	    d3.behavior.drag()
+		.origin(function(d){
+		    return {
+			"x" : parseInt(el.style("left")),
+			"y" : parseInt(el.style("top"))
+		    };
+		})
+		.on("drag", function(d){
+		    el
+			.style("top", d3.event.y + "px")
+			.style("left", d3.event.x + "px");
+		})
+	);
+    },
+    
+
 
     open: function(el, button) {
 	button
