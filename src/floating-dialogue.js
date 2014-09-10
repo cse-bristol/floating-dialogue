@@ -18,6 +18,15 @@ var makeToggleFunction = function(el, button) {
  */
 module.exports = {
     drag: function(el) {
+	el.style("cursor", "move");
+
+	if(el.style("left") === "auto") {
+	    el.style("left", 0);
+	}
+	if(el.style("top") === "auto") {
+	    el.style("top", 0);
+	}
+	
 	el.call(
 	    d3.behavior.drag()
 		.origin(function(d){
