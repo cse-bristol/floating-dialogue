@@ -39,7 +39,7 @@ module.exports = {
 
     close: function(el, openButton) {
 	var closeButton = el.append("span")
-	    .classed("close-button")
+	    .classed("close-button", true)
 	    .style("font-size", "large")
 	    .style("position", "absolute")
 	    .style("top", "5px")
