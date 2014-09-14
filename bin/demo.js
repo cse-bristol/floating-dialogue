@@ -9316,7 +9316,7 @@ module.exports = {
 		.classed("close-button", true)
 		.style("font-size", "large")
 		.style("position", "absolute")
-		.style("top", "5px")
+		.style("top", "3px")
 		.style("right", "5px")
 		.style("opacity", "0.6")
 		.style("cursor", "pointer")
