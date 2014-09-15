@@ -22,15 +22,17 @@ module.exports = function(el) {
 	content = el.append("div")
 	    .classed("content", true);
 
-    // Padding prevents us from make the box too small to resize.
     el
+    // Padding prevents us from make the box too small to resize.
 	.style("overflow", "hidden")
 	.style("padding-right", "1.5em")
 	.style("padding-bottom", "3em");
 
     var m = {
 	drag: function() {
-	    el.style("cursor", "move");
+	    el
+		.style("cursor", "move")
+		.style("position", "absolute");
 
 	    if(el.style("left") === "auto") {
 		el.style("left", 0);
