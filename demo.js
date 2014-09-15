@@ -6,7 +6,6 @@ var d3 = require("d3"),
     body = d3.select(document.body),
     floatDialogue = require("./src/floating-dialogue.js"),
     el = body.append("div")
-	.text("Draggable Thing")
 	.style("width", "10em")
 	.style("height", "4em")
 	.style("position", "fixed")
@@ -16,7 +15,10 @@ var d3 = require("d3"),
 	.style("position", "fixed")
 	.style("right", "1vw");
 
-floatDialogue.drag(el);
-floatDialogue.resize(el);
-floatDialogue.open(el, button);
-floatDialogue.close(el, button);
+floatDialogue(el)
+    .drag()
+    .resize()
+    .open(button)
+    .close()
+    .content()
+    .text("Draggable Thing");
