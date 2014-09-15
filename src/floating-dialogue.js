@@ -4,15 +4,6 @@
 
 var d3 = require("d3");
 
-var makeToggleFunction = function(el, button) {
-    return function() {
-	var wasVisible = (el.style("visibility") === "visible");
-	
-	button.classed("element-visible", wasVisible ? false : true);
-	el.style("visibility", wasVisible ? "hidden" : "visible");
-    };
-};
-
 /*
  Provides some functions which can be applied to an HTML element.
  */
@@ -21,6 +12,18 @@ module.exports = function(el) {
 	closeButton,
 	content = el.append("div")
 	    .classed("content", true);
+
+    var visibility = function(show) {
+	if (openButton) {
+	    openButton.classed("element-visible", show);
+	}
+	el.style("visibility", show ? "visible" : "hidden");
+    };
+
+    var toggle = function() {
+	var wasVisible = (el.style("visibility") === "visible");
+	visibility(!wasVisible);
+    };
 
     el
     // Padding prevents us from make the box too small to resize.
@@ -64,14 +67,10 @@ module.exports = function(el) {
 	    button
 		.classed("open-button", true)
 		.style("cursor", "pointer")
-		.on("click", makeToggleFunction(el, button));
+		.on("click", toggle);
 
 	    openButton = button;
 
-	    if (closeButton) {
-		closeButton.on("click", makeToggleFunction(el, openButton));
-	    };
-	    
 	    return m;
 	},
 
@@ -87,17 +86,7 @@ module.exports = function(el) {
 		    .style("cursor", "pointer")
 		    .html("❌");
 
-	    if (openButton) {
-		closeButton.on("click", makeToggleFunction(el, openButton));
-		
-	    } else {
-		closeButton.on(
-		    "click", 
-		    function(d, i){
-			el.style("visibility", "hidden");
-		    }
-		);
-	    }
+	    closeButton.on("click", toggle);
 
 	    return m;
 	},
@@ -129,6 +118,14 @@ module.exports = function(el) {
 		.call(dragHandle);
 
 	    return m;
+	},
+
+	hide: function() {
+	    visibility(false);
+	},
+
+	show: function() {
+	    visibility(true);
 	},
 
 	content: function() {
