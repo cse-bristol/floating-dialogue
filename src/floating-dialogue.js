@@ -66,6 +66,7 @@ module.exports = function(el) {
 	open: function(button) {
 	    button
 		.classed("open-button", true)
+		.classed("element-visible", el.attr("visibility") !== "hidden")
 		.style("cursor", "pointer")
 		.on("click", toggle);
 

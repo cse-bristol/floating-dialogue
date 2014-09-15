@@ -9288,7 +9288,7 @@ module.exports = function(el) {
     el
     // Padding prevents us from make the box too small to resize.
 	.style("overflow", "hidden")
-	.style("padding-right", "1.5em")
+	.style("padding-right", "2em")
 	.style("padding-bottom", "3em");
 
     var m = {
@@ -9326,6 +9326,7 @@ module.exports = function(el) {
 	open: function(button) {
 	    button
 		.classed("open-button", true)
+		.classed("element-visible", el.attr("visibility") !== "hidden")
 		.style("cursor", "pointer")
 		.on("click", toggle);
 
