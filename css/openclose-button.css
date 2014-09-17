@@ -4,7 +4,7 @@
     padding: 0.2em;
     color: white;
     background-color: #181818;
-    
+    position: absolute;
 }
 
 .open-button.element-visible {
