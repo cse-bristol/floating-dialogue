@@ -68,7 +68,10 @@ module.exports = function(el) {
 		.classed("open-button", true)
 		.classed("element-visible", el.attr("visibility") !== "hidden")
 		.style("cursor", "pointer")
-		.on("click", toggle);
+		.on("click", function(d, i) {
+		    d3.event.preventDefault();
+		    toggle();
+		});
 
 	    openButton = button;
 
@@ -123,10 +126,12 @@ module.exports = function(el) {
 
 	hide: function() {
 	    visibility(false);
+	    return m;
 	},
 
 	show: function() {
 	    visibility(true);
+	    return m;
 	},
 
 	content: function() {
