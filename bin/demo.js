@@ -9328,7 +9328,10 @@ module.exports = function(el) {
 		.classed("open-button", true)
 		.classed("element-visible", el.attr("visibility") !== "hidden")
 		.style("cursor", "pointer")
-		.on("click", toggle);
+		.on("click", function(d, i) {
+		    d3.event.preventDefault();
+		    toggle();
+		});
 
 	    openButton = button;
 
@@ -9345,7 +9348,7 @@ module.exports = function(el) {
 		    .style("right", "5px")
 		    .style("opacity", "0.6")
 		    .style("cursor", "pointer")
-		    .html("❌");
+		    .html("X");
 
 	    closeButton.on("click", toggle);
 
@@ -9375,7 +9378,7 @@ module.exports = function(el) {
 		.style("bottom", "0")
 		.style("right", "5px")
 		.style("opacity", "0.6")
-		.html("⇲")
+		.html("⇘")
 		.call(dragHandle);
 
 	    return m;
@@ -9383,10 +9386,12 @@ module.exports = function(el) {
 
 	hide: function() {
 	    visibility(false);
+	    return m;
 	},
 
 	show: function() {
 	    visibility(true);
+	    return m;
 	},
 
 	content: function() {

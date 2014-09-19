@@ -88,7 +88,7 @@ module.exports = function(el) {
 		    .style("right", "5px")
 		    .style("opacity", "0.6")
 		    .style("cursor", "pointer")
-		    .html("❌");
+		    .html("X");
 
 	    closeButton.on("click", toggle);
 
@@ -118,7 +118,7 @@ module.exports = function(el) {
 		.style("bottom", "0")
 		.style("right", "5px")
 		.style("opacity", "0.6")
-		.html("⇲")
+		.html("⇘")
 		.call(dragHandle);
 
 	    return m;
