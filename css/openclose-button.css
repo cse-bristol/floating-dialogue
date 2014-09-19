@@ -5,6 +5,7 @@
     color: white;
     background-color: #181818;
     position: absolute;
+    text-align: center;
 }
 
 .open-button.element-visible {
