@@ -26,10 +26,8 @@ module.exports = function(el) {
     };
 
     el
-    // Padding prevents us from make the box too small to resize.
-	.style("overflow", "hidden")
-	.style("padding-right", "2em")
-	.style("padding-bottom", "3em");
+
+	.style("overflow", "hidden");
 
     var m = {
 	drag: function() {
@@ -79,7 +77,10 @@ module.exports = function(el) {
 	},
 
 	close: function() {
-	    var closeButton = el.append("span")
+	    var closeButton = el
+	    // This padding provides space for the button.
+		    .style("padding-right", "1.5em")
+		    .append("span")
 		    .classed("close-button", true)
 		    .style("font-size", "x-large")
 		    .style("font-family", "monospace")
@@ -111,7 +112,12 @@ module.exports = function(el) {
 			el.style("width", d3.event.x + "px");
 		    });
 
-	    el.append("span")
+	    el
+	    // This padding prevents us from make the box too small to resize.
+		.style("padding-bottom", "3em")
+	    // This padding provides space for the button.
+		    .style("padding-right", "1.5em")
+		.append("span")
 		.style("font-size", "xx-large")
 		.style("font-family", "monospace")
 		.style("position", "absolute")
