@@ -130,7 +130,6 @@ module.exports = function(el) {
 		    .classed("close-button", true)
 		    .style("font-size", "x-large")
 		    .style("font-family", "monospace")
-		    .style("background-color", "white")
 		    .style("position", "absolute")
 		    .style("top", "0")
 		    .style("right", "5px")
@@ -164,9 +163,9 @@ module.exports = function(el) {
 	    // This padding provides space for the button.
 		.style("padding-right", "1.5em")
 		.append("span")
+		.classed("resize-dialogue", true)
 		.style("font-size", "xx-large")
 		.style("font-family", "monospace")
-		.style("background-color", "white")
 		.style("position", "absolute")
 		.style("bottom", "0")
 		.style("right", "5px")
