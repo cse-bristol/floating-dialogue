@@ -88,10 +88,14 @@ module.exports = function(el) {
 		return m;
 	    } else {
 		// If the current open button isn't in the selection, clear it.
-		if (currentOpenButton && buttons.filter(function(d, i) {
-		    return this === currentOpenButton.node();
-		}.empty())) {
-		    currentOpenButton = undefined;
+		if (currentOpenButton) {
+		    var current = buttons.filter(function(d, i) {
+			return this === currentOpenButton.node();
+		    });
+
+		    if (current.empty()) {
+			currentOpenButton = undefined;
+		    }
 		}
 		
 		buttons
