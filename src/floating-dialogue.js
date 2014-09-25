@@ -186,6 +186,10 @@ module.exports = function(el) {
 	    return m;
 	},
 
+	visible: function() {
+	    return el.style("visibility") === "visible";
+	},
+
 	content: function() {
 	    return content;
 	},
