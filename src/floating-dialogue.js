@@ -130,10 +130,10 @@ module.exports = function(el) {
 		    .classed("close-button", true)
 		    .style("font-size", "x-large")
 		    .style("font-family", "monospace")
+		    .style("background-color", "white")
 		    .style("position", "absolute")
 		    .style("top", "0")
 		    .style("right", "5px")
-		    .style("opacity", "0.6")
 		    .style("cursor", "pointer")
 		    .html("X");
 
@@ -166,10 +166,10 @@ module.exports = function(el) {
 		.append("span")
 		.style("font-size", "xx-large")
 		.style("font-family", "monospace")
+		.style("background-color", "white")
 		.style("position", "absolute")
 		.style("bottom", "0")
 		.style("right", "5px")
-		.style("opacity", "0.6")
 		.html("⇘")
 		.call(dragHandle);
 
