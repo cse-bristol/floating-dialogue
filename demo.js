@@ -11,11 +11,13 @@ var d3 = require("d3"),
 	.style("border", "1px solid red"),
     button = body.append("div")
 	.text("Open/Close Button")
-	.style("right", "1vw"),
+	.style("right", "1vw")
+	.style("position", "absolute"),
     button2 = body.append("div")
 	.text("Button 2")
 	.style("right", "1vw")
-	.style("top", "2em");
+	.style("top", "2em")
+	.style("position", "absolute");
 
 floatDialogue(el)
     .drag()
