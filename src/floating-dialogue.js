@@ -107,7 +107,6 @@ module.exports = function(el) {
 			}
 			return false;
 		    })
-		    .style("cursor", "pointer")
 		    .on("click", function(d, i) {
 			d3.event.preventDefault();
 			toggle(d3.select(this));

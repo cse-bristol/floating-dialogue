@@ -6,6 +6,7 @@
     background-color: #181818;
     position: absolute;
     text-align: center;
+    cursor: pointer;
 }
 
 .open-button.element-visible {
