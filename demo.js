@@ -22,8 +22,8 @@ var d3 = require("d3"),
 floatDialogue(el)
     .drag()
     .resize()
+    .show()
     .open(d3.selectAll([button.node(), button2.node()]))
-    .hide()
     .close()
     .content()
     .text("Draggable Thing");

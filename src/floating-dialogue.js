@@ -18,9 +18,14 @@ module.exports = function(el) {
 	if (openButtons !== undefined) {
 	    openButtons.classed("element-visible", false);
 
-	    if (show && targetButton !== undefined) {
-		currentOpenButton = targetButton;
-		targetButton.classed("element-visible", true);
+	    if (show) {
+		if (targetButton !== undefined) {
+		    currentOpenButton = targetButton;
+
+		} else if (currentOpenButton === undefined) {
+		    currentOpenButton = d3.select(openButtons.node());
+		}
+		currentOpenButton.classed("element-visible", true);
 	    }
 	}
 	el.style("visibility", show ? "visible" : "hidden");
@@ -100,24 +105,14 @@ module.exports = function(el) {
 		
 		buttons
 		    .classed("open-button", true)
-		    .classed("element-visible", function(d, i) {
-			if (el.style("visibility") === "visible") {
-			    if (currentOpenButton && this === currentOpenButton.node()) {
-				return true;
-			    } else if (currentOpenButton === undefined) {
-				currentOpenButton = d3.select(this);
-				currentOpenButton.classed("element-visible", true);
-				return true;
-			    }
-			}
-			return false;
-		    })
 		    .on("click", function(d, i) {
 			d3.event.preventDefault();
 			toggle(d3.select(this));
 		    });
 		
 		openButtons = buttons;
+
+		visibility(m.visible());
 		
 		return m;
 	    }
