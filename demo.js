@@ -11,13 +11,16 @@ var d3 = require("d3"),
 	.style("border", "1px solid red"),
     button = body.append("div")
 	.text("Open/Close Button")
-	.style("position", "fixed")
-	.style("right", "1vw");
+	.style("right", "1vw"),
+    button2 = body.append("div")
+	.text("Button 2")
+	.style("right", "1vw")
+	.style("top", "2em");
 
 floatDialogue(el)
     .drag()
     .resize()
-    .open(button)
+    .open(d3.selectAll([button.node(), button2.node()]))
     .close()
     .content()
     .text("Draggable Thing");

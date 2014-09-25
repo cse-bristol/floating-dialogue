@@ -8,25 +8,43 @@ var d3 = require("d3");
  Provides some functions which can be applied to an HTML element.
  */
 module.exports = function(el) {
-    var openButton,
+    var openButtons,
+	currentOpenButton,
 	closeButton,
 	content = el.append("div")
 	    .classed("content", true);
 
-    var visibility = function(show) {
-	if (openButton) {
-	    openButton.classed("element-visible", show);
+    var visibility = function(show, targetButton) {
+	if (openButtons !== undefined) {
+	    openButtons.classed("element-visible", false);
+
+	    if (show && targetButton !== undefined) {
+		currentOpenButton = targetButton;
+		targetButton.classed("element-visible", true);
+	    }
 	}
 	el.style("visibility", show ? "visible" : "hidden");
     };
 
-    var toggle = function() {
+    var disable = function() {
+	if (openButtons !== undefined) {
+	    openButtons.classed("element-visible", false);
+	}
+
+	el.style("visibility", "hidden");
+    };
+
+    var toggle = function(button) {
+	// if it's not visible, open it with the button
 	var wasVisible = (el.style("visibility") === "visible");
-	visibility(!wasVisible);
+
+	visibility(
+	    !(wasVisible && button.node() === currentOpenButton.node()),
+	    button
+	);
     };
 
     el
-
 	.style("overflow", "hidden");
 
     var m = {
@@ -41,6 +59,7 @@ module.exports = function(el) {
 	    if(el.style("top") === "auto") {
 		el.style("top", 0);
 	    }
+
 	    
 	    el.call(
 		d3.behavior.drag()
@@ -61,19 +80,43 @@ module.exports = function(el) {
 	    return m;
 	},
 	
-	open: function(button) {
-	    button
-		.classed("open-button", true)
-		.classed("element-visible", el.attr("visibility") !== "hidden")
-		.style("cursor", "pointer")
-		.on("click", function(d, i) {
-		    d3.event.preventDefault();
-		    toggle();
-		});
-
-	    openButton = button;
-
-	    return m;
+	open: function(buttons) {
+	    if (buttons.empty()) {
+		buttons = undefined;
+		currentOpenButton = undefined;
+		m.hide();
+		return m;
+	    } else {
+		// If the current open button isn't in the selection, clear it.
+		if (currentOpenButton && buttons.filter(function(d, i) {
+		    return this === currentOpenButton.node();
+		}.empty())) {
+		    currentOpenButton = undefined;
+		}
+		
+		buttons
+		    .classed("open-button", true)
+		    .classed("element-visible", function(d, i) {
+			if (el.attr("visibility") !== "hidden") {
+			    if (currentOpenButton && this === currentOpenButton.node()) {
+				return true;
+			    } else if (currentOpenButton === undefined) {
+				currentOpenButton = d3.select(this);
+				return true;
+			    }
+			}
+			return false;
+		    })
+		    .style("cursor", "pointer")
+		    .on("click", function(d, i) {
+			d3.event.preventDefault();
+			toggle(d3.select(this));
+		    });
+		
+		openButtons = buttons;
+		
+		return m;
+	    }
 	},
 
 	close: function() {
@@ -91,7 +134,7 @@ module.exports = function(el) {
 		    .style("cursor", "pointer")
 		    .html("X");
 
-	    closeButton.on("click", toggle);
+	    closeButton.on("click", disable);
 
 	    return m;
 	},
@@ -116,7 +159,7 @@ module.exports = function(el) {
 	    // This padding prevents us from make the box too small to resize.
 		.style("padding-bottom", "3em")
 	    // This padding provides space for the button.
-		    .style("padding-right", "1.5em")
+		.style("padding-right", "1.5em")
 		.append("span")
 		.style("font-size", "xx-large")
 		.style("font-family", "monospace")
@@ -142,6 +185,10 @@ module.exports = function(el) {
 
 	content: function() {
 	    return content;
+	},
+
+	currentOpenButton: function() {
+	    return currentOpenButton;
 	}
     };
     return m;
