@@ -39,7 +39,7 @@ module.exports = function(el) {
 	var wasVisible = (el.style("visibility") === "visible");
 
 	visibility(
-	    !(wasVisible && button.node() === currentOpenButton.node()),
+	    !(wasVisible && currentOpenButton && button.node() === currentOpenButton.node()),
 	    button
 	);
     };
@@ -101,11 +101,12 @@ module.exports = function(el) {
 		buttons
 		    .classed("open-button", true)
 		    .classed("element-visible", function(d, i) {
-			if (el.attr("visibility") !== "hidden") {
+			if (el.style("visibility") === "visible") {
 			    if (currentOpenButton && this === currentOpenButton.node()) {
 				return true;
 			    } else if (currentOpenButton === undefined) {
 				currentOpenButton = d3.select(this);
+				currentOpenButton.classed("element-visible", true);
 				return true;
 			    }
 			}
@@ -193,5 +194,6 @@ module.exports = function(el) {
 	    return currentOpenButton;
 	}
     };
+
     return m;
 };
