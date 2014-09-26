@@ -191,6 +191,10 @@ module.exports = function(el) {
 
 	currentOpenButton: function() {
 	    return currentOpenButton;
+	},
+
+	el: function() {
+	    return el;
 	}
     };
 
