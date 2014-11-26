@@ -224,8 +224,8 @@ module.exports = function(el) {
 	size: function(value) {
 	    if (value) {
 		el
-		    .style("width", value[0])
-		    .style("height", value[1]);
+		    .style("width", value[0] + "px")
+		    .style("height", value[1] + "px");
 		manuallySized = true;
 	    }
 	    
@@ -241,8 +241,8 @@ module.exports = function(el) {
 	position: function(value) {
 	    if (value) {
 		el
-		    .style("left", value[0])
-		    .style("top", value[1]);
+		    .style("left", value[0] + "px")
+		    .style("top", value[1] + "px");
 		manuallyPositioned = true;
 	    }
 	    
