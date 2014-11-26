@@ -11,6 +11,8 @@ module.exports = function(el) {
     var openButtons,
 	currentOpenButton,
 	closeButton,
+	manuallyPositioned = false,
+	manuallySized = false,
 	content = el.append("div")
 	    .classed("content", true);
 
@@ -79,12 +81,16 @@ module.exports = function(el) {
 			el
 			    .style("top", d3.event.y + "px")
 			    .style("left", d3.event.x + "px");
+			manuallyPositioned = true;
 		    })
 	    );
 
 	    return m;
 	},
-	
+
+	/*
+	 Allows the dialogue to be shown and hidden by buttons, which are other elements.
+	 */
 	open: function(buttons) {
 	    if (buttons.empty()) {
 		buttons = undefined;
@@ -118,6 +124,9 @@ module.exports = function(el) {
 	    }
 	},
 
+	/*
+	 Adds a hide button 'X' to the dialogue.
+	 */
 	close: function() {
 	    var closeButton = el
 	    // This padding provides space for the button.
@@ -137,6 +146,9 @@ module.exports = function(el) {
 	    return m;
 	},
 
+	/*
+	 Adds a resize handle to the dialogue.
+	 */
 	resize: function() {
 	    var dragHandle = d3.behavior.drag()
 		    .origin(function(d){
@@ -151,6 +163,7 @@ module.exports = function(el) {
 		    .on("drag", function(d){
 			el.style("height", d3.event.y + "px");
 			el.style("width", d3.event.x + "px");
+			manuallySized = true;
 		    });
 
 	    el
@@ -195,6 +208,46 @@ module.exports = function(el) {
 
 	el: function() {
 	    return el;
+	},
+
+	manaullySized: function() {
+	    return manuallySized;
+	},
+
+	manuallyPositioned: function() {
+	    return manuallyPositioned;
+	},
+
+	/*
+	 Gets or sets the current size of the dialogue in [width, height] pixels
+	 */
+	size: function(value) {
+	    if (value) {
+		el
+		    .style("width", value[0])
+		    .style("height", value[1]);
+	    }
+	    
+	    return [
+		parseInt(el.style("width")),
+		parseInt(el.style("height"))
+	    ];
+	},
+
+	/*
+	 Gets or sets the current position of the dialogue relative to the top-left corner in [x, y] pixels.
+	 */
+	position: function(value) {
+	    if (value) {
+		el
+		    .style("left", value[0])
+		    .style("top", value[1]);
+	    }
+	    
+	    return [
+		parseInt(el.style("left")),
+		parseInt(el.style("top"))
+	    ];
 	}
     };
 
