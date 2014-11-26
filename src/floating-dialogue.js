@@ -210,7 +210,7 @@ module.exports = function(el) {
 	    return el;
 	},
 
-	manaullySized: function() {
+	manuallySized: function() {
 	    return manuallySized;
 	},
 
