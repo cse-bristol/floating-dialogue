@@ -226,6 +226,7 @@ module.exports = function(el) {
 		el
 		    .style("width", value[0])
 		    .style("height", value[1]);
+		manuallySized = true;
 	    }
 	    
 	    return [
@@ -242,6 +243,7 @@ module.exports = function(el) {
 		el
 		    .style("left", value[0])
 		    .style("top", value[1]);
+		manuallyPositioned = true;
 	    }
 	    
 	    return [
