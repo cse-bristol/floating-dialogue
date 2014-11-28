@@ -2,7 +2,35 @@
 
 /*global module, require*/
 
-var d3 = require("d3");
+var d3 = require("d3"),
+    callbacks = function() {
+	var callbacks = [];
+	
+	var f = function() {
+	    var args = arguments;
+	    callbacks.forEach(function(c) {
+		c.apply(this, args);
+	    });
+	};
+	f.add = function(c) {
+	    callbacks.push(c);
+	};
+
+	f.remove = function(c) {
+	    var i = callbacks.indexOf(c);
+	    if (i >= 0) {
+		callbacks.splice(i, 1);
+	    }
+	};
+
+	f.clear = function() {
+	    while (callbacks.length > 0) {
+		callbacks.pop();
+	    }
+	};
+
+	return f;
+    };
 
 /*
  Provides some functions which can be applied to an HTML element.
@@ -13,6 +41,9 @@ module.exports = function(el) {
 	closeButton,
 	manuallyPositioned = false,
 	manuallySized = false,
+	onVisibilityChanged = callbacks(),
+	onPositionChanged = callbacks(),
+	onSizeChanged = callbacks(),
 	content = el.append("div")
 	    .classed("content", true);
 
@@ -31,6 +62,7 @@ module.exports = function(el) {
 	    }
 	}
 	el.style("visibility", show ? "visible" : "hidden");
+	onVisibilityChanged(show);
     };
 
     var disable = function() {
@@ -39,6 +71,7 @@ module.exports = function(el) {
 	}
 
 	el.style("visibility", "hidden");
+	onVisibilityChanged(false);
     };
 
     var toggle = function(button) {
@@ -82,6 +115,7 @@ module.exports = function(el) {
 			    .style("top", d3.event.y + "px")
 			    .style("left", d3.event.x + "px");
 			manuallyPositioned = true;
+			onPositionChanged(d3.event.x, d3.event.y);
 		    })
 	    );
 
@@ -161,9 +195,10 @@ module.exports = function(el) {
 			d3.event.sourceEvent.stopPropagation();
 		    })
 		    .on("drag", function(d){
-			el.style("height", d3.event.y + "px");
 			el.style("width", d3.event.x + "px");
+			el.style("height", d3.event.y + "px");
 			manuallySized = true;
+			onSizeChanged(d3.event.x, d3.event.y);
 		    });
 
 	    el
@@ -227,6 +262,7 @@ module.exports = function(el) {
 		    .style("width", value[0] + "px")
 		    .style("height", value[1] + "px");
 		manuallySized = true;
+		onSizeChanged(value[0], value[1]);
 	    }
 	    
 	    return [
@@ -244,13 +280,18 @@ module.exports = function(el) {
 		    .style("left", value[0] + "px")
 		    .style("top", value[1] + "px");
 		manuallyPositioned = true;
+		onPositionChanged(value[0], value[1]);
 	    }
 	    
 	    return [
 		parseInt(el.style("left")),
 		parseInt(el.style("top"))
 	    ];
-	}
+	},
+
+	onVisibilityChanged: onVisibilityChanged.add,
+	onPositionChanged: onPositionChanged.add,
+	onSizeChanged: onSizeChanged.add
     };
 
     return m;
