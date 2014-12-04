@@ -115,7 +115,7 @@ module.exports = function(el) {
 			    .style("top", d3.event.y + "px")
 			    .style("left", d3.event.x + "px");
 			manuallyPositioned = true;
-			onPositionChanged(d3.event.x, d3.event.y);
+			onPositionChanged([d3.event.x, d3.event.y]);
 		    })
 	    );
 
@@ -198,7 +198,7 @@ module.exports = function(el) {
 			el.style("width", d3.event.x + "px");
 			el.style("height", d3.event.y + "px");
 			manuallySized = true;
-			onSizeChanged(d3.event.x, d3.event.y);
+			onSizeChanged([d3.event.x, d3.event.y]);
 		    });
 
 	    el
@@ -262,7 +262,7 @@ module.exports = function(el) {
 		    .style("width", value[0] + "px")
 		    .style("height", value[1] + "px");
 		manuallySized = true;
-		onSizeChanged(value[0], value[1]);
+		onSizeChanged(value);
 		return m;
 	    }
 	    
@@ -281,7 +281,7 @@ module.exports = function(el) {
 		    .style("left", value[0] + "px")
 		    .style("top", value[1] + "px");
 		manuallyPositioned = true;
-		onPositionChanged(value[0], value[1]);
+		onPositionChanged(value);
 		return m;
 	    }
 	    
