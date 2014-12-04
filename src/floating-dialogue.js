@@ -263,6 +263,7 @@ module.exports = function(el) {
 		    .style("height", value[1] + "px");
 		manuallySized = true;
 		onSizeChanged(value[0], value[1]);
+		return m;
 	    }
 	    
 	    return [
@@ -281,6 +282,7 @@ module.exports = function(el) {
 		    .style("top", value[1] + "px");
 		manuallyPositioned = true;
 		onPositionChanged(value[0], value[1]);
+		return m;
 	    }
 	    
 	    return [

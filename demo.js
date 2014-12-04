@@ -25,5 +25,9 @@ floatDialogue(el)
     .show()
     .open(d3.selectAll([button.node(), button2.node()]))
     .close()
+    .size([200, 200])
+    .position([100, 100])
     .content()
     .text("Draggable Thing");
+
+
