@@ -8,7 +8,8 @@ var d3 = require("d3"),
     el = body.append("div")
 	.style("width", "10em")
 	.style("height", "4em")
-	.style("border", "1px solid red"),
+	.style("border", "1px solid red")
+	.style("background-color", "pink"),
     button = body.append("div")
 	.text("Open/Close Button")
 	.style("right", "1vw")
@@ -17,7 +18,13 @@ var d3 = require("d3"),
 	.text("Button 2")
 	.style("right", "1vw")
 	.style("top", "2em")
-	.style("position", "absolute");
+	.style("position", "absolute"),
+
+    el2 = body.append("div")
+	.style("width", "10em")
+	.style("height", "4em")
+	.style("border", "1px solid red")
+	.style("background-color", "grey");
 
 floatDialogue(el)
     .drag()
@@ -27,7 +34,18 @@ floatDialogue(el)
     .close()
     .size([200, 200])
     .position([100, 100])
+    .bringToFront()
     .content()
-    .text("Draggable Thing");
+    .text("Connected to Buttons");
+
+floatDialogue(el2)
+    .drag()
+    .resize()
+    .show()
+    .bringToFront()
+    .content()
+    .text("Standalone");
+
+
 
 

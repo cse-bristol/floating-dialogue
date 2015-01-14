@@ -3,6 +3,10 @@
 /*global module, require*/
 
 var d3 = require("d3"),
+    z = 10,
+    getNextZ = function() {
+	return z++;
+    },
     callbacks = function() {
 	var callbacks = [];
 	
@@ -113,7 +117,9 @@ module.exports = function(el) {
 			d3.event.sourceEvent.preventDefault();
 			el
 			    .style("top", d3.event.y + "px")
-			    .style("left", d3.event.x + "px");
+			    .style("left", d3.event.x + "px")
+			    .style("bottom", null)
+			    .style("right", null);
 			manuallyPositioned = true;
 			onPositionChanged([d3.event.x, d3.event.y]);
 		    })
@@ -219,6 +225,23 @@ module.exports = function(el) {
 	    return m;
 	},
 
+	bringToFront: function() {
+	    el.append("span")
+		.classed("bring-to-front", true)
+		.style("font-family", "monospace")
+		.style("font-weight", "bold")
+		.style("position", "absolute")
+		.style("right", "2em")
+		.style("bottom", "0.2em")
+		.style("cursor", "pointer")
+		.text("TOP")
+		.on("click", function(d, i) {
+		    el.style("z-index", getNextZ());
+		});
+
+	    return m;
+	},
+
 	hide: function() {
 	    visibility(false);
 	    return m;
@@ -279,7 +302,9 @@ module.exports = function(el) {
 	    if (value) {
 		el
 		    .style("left", value[0] + "px")
-		    .style("top", value[1] + "px");
+		    .style("right", null)
+		    .style("top", value[1] + "px")
+		    .style("bottom", null);
 		manuallyPositioned = true;
 		onPositionChanged(value);
 		return m;
