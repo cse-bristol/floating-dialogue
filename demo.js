@@ -4,7 +4,7 @@
 
 var d3 = require("d3"),
     body = d3.select(document.body),
-    floatDialogue = require("./src/floating-dialogue.js"),
+    floatDialogue = require("./js/floating-dialogue.js"),
     el = body.append("div")
 	.style("width", "10em")
 	.style("height", "4em")
