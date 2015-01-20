@@ -153,6 +153,7 @@ module.exports = function(el) {
 		    .classed("open-button", true)
 		    .on("click", function(d, i) {
 			d3.event.preventDefault();
+			d3.event.stopPropagation();
 			toggle(d3.select(this));
 		    });
 		
