@@ -34,7 +34,10 @@ var d3 = require("d3"),
 	};
 
 	return f;
-    };
+    },
+    // Values found by trial and error. I wouldn't expect these to be exact at different zoom levels, but they seem to work quite well.
+    xBuffer = 30,
+    yBuffer = 52;
 
 /*
  Provides some functions which can be applied to an HTML element.
@@ -49,47 +52,104 @@ module.exports = function(el) {
 	onPositionChanged = callbacks(),
 	onSizeChanged = callbacks(),
 	content = el.append("div")
-	    .classed("content", true);
+	    .classed("content", true),
 
-    var visibility = function(show, targetButton) {
-	if (openButtons !== undefined) {
-	    openButtons.classed("element-visible", false);
+	visibility = function(show, targetButton) {
+	    if (openButtons !== undefined) {
+		openButtons.classed("element-visible", false);
+		
+		if (show) {
+		    if (targetButton !== undefined) {
+			currentOpenButton = targetButton;
 
-	    if (show) {
-		if (targetButton !== undefined) {
-		    currentOpenButton = targetButton;
-
-		} else if (currentOpenButton === undefined) {
-		    currentOpenButton = d3.select(openButtons.node());
+		    } else if (currentOpenButton === undefined) {
+			currentOpenButton = d3.select(openButtons.node());
+		    }
+		    currentOpenButton.classed("element-visible", true);
 		}
-		currentOpenButton.classed("element-visible", true);
 	    }
-	}
-	el.style("visibility", show ? "visible" : "hidden");
-	onVisibilityChanged(show);
-    };
+	    el.style("visibility", show ? "visible" : "hidden");
+	    onVisibilityChanged(show);
+	},
 
-    var disable = function() {
-	if (openButtons !== undefined) {
-	    openButtons.classed("element-visible", false);
-	}
+	disable = function() {
+	    if (openButtons !== undefined) {
+		openButtons.classed("element-visible", false);
+	    }
 
-	el.style("visibility", "hidden");
-	onVisibilityChanged(false);
-    };
+	    el.style("visibility", "hidden");
+	    onVisibilityChanged(false);
+	},
 
-    var toggle = function(button) {
-	// if it's not visible, open it with the button
-	var wasVisible = (el.style("visibility") === "visible");
+	toggle = function(button) {
+	    // if it's not visible, open it with the button
+	    var wasVisible = (el.style("visibility") === "visible");
 
-	visibility(
-	    !(wasVisible && currentOpenButton && button.node() === currentOpenButton.node()),
-	    button
-	);
-    };
+	    visibility(
+		!(wasVisible && currentOpenButton && button.node() === currentOpenButton.node()),
+		button
+	    );
+	},
 
-    el
-	.style("overflow", "hidden");
+	setSize = function(width, height) {
+	    var x = parseInt(el.style("left")),
+		y = parseInt(el.style("top"));
+	    
+
+	    if (x) {
+		width = Math.min(
+		    width,
+		    window.innerWidth - x - xBuffer
+		);
+	    }
+	    
+	    if (y) {
+		height = Math.min(
+		    height,
+		    window.innerHeight - y - yBuffer
+		);
+	    }
+
+	    /*
+	     No need to set a minimum width, since this is already handled by a css property.
+	     */
+	    
+	    el
+		.style("width", width + "px")
+		.style("height", height + "px");
+
+	    manuallySized = true;
+	},
+
+	setPosition = function(x, y) {
+	    var width = parseInt(el.style("width")),
+		height = parseInt(el.style("height"));
+
+	    if (width) {
+		x = Math.min(
+		    x,
+		    window.innerWidth - width - xBuffer
+		);		   
+	    }
+
+	    if (height) {
+		y = Math.min(
+		    y,
+		    window.innerHeight - height - yBuffer
+		);
+	    }
+
+	    x = Math.max(x, 0);
+	    y = Math.max(y, 0);
+	    
+	    el
+		.style("left", x + "px")
+		.style("top", y + "px")
+		.style("bottom", null)
+		.style("right", null);
+
+	    manuallyPositioned = true;	    
+	};
 
     var m = {
 	drag: function() {
@@ -115,12 +175,7 @@ module.exports = function(el) {
 		    })
 		    .on("drag", function(d){
 			d3.event.sourceEvent.preventDefault();
-			el
-			    .style("top", d3.event.y + "px")
-			    .style("left", d3.event.x + "px")
-			    .style("bottom", null)
-			    .style("right", null);
-			manuallyPositioned = true;
+			setPosition(d3.event.x, d3.event.y);
 			onPositionChanged([d3.event.x, d3.event.y]);
 		    })
 	    );
@@ -202,9 +257,7 @@ module.exports = function(el) {
 			d3.event.sourceEvent.stopPropagation();
 		    })
 		    .on("drag", function(d){
-			el.style("width", d3.event.x + "px");
-			el.style("height", d3.event.y + "px");
-			manuallySized = true;
+			setSize(d3.event.x, d3.event.y);
 			onSizeChanged([d3.event.x, d3.event.y]);
 		    });
 
@@ -282,10 +335,7 @@ module.exports = function(el) {
 	 */
 	size: function(value) {
 	    if (value) {
-		el
-		    .style("width", value[0] + "px")
-		    .style("height", value[1] + "px");
-		manuallySized = true;
+		setSize(value[0], value[1]);
 		onSizeChanged(value);
 		return m;
 	    }
@@ -301,12 +351,7 @@ module.exports = function(el) {
 	 */
 	position: function(value) {
 	    if (value) {
-		el
-		    .style("left", value[0] + "px")
-		    .style("right", null)
-		    .style("top", value[1] + "px")
-		    .style("bottom", null);
-		manuallyPositioned = true;
+		setPosition(value[0], value[1]);
 		onPositionChanged(value);
 		return m;
 	    }
@@ -321,6 +366,27 @@ module.exports = function(el) {
 	onPositionChanged: onPositionChanged.add,
 	onSizeChanged: onSizeChanged.add
     };
+
+    el
+	.style("overflow", "hidden");
+
+    d3.select(window)
+    // Each of these needs a unique namespace because otherwise they'll overwrite each other.
+	.on("resize." + Math.random(), function(d, i) {
+	    if (manuallyPositioned) {
+		setPosition(
+		    parseInt(el.style("left")),
+		    parseInt(el.style("top"))
+		);
+	    }
+
+	    if (manuallySized) {
+		setSize(
+		    parseInt(el.style("width")),
+		    parseInt(el.style("height"))
+		);
+	    }
+	});
 
     return m;
 };
