@@ -1,6 +1,6 @@
 {
     "name": "floating-dialogue",
-    "version": "0.1.0",
+    "version": "0.5.0",
     "description": "Use d3 to alter HTML elements. Can add drag to move, resize handle, close button, and open icon.",
     "license": "MIT",
     "directories": {
