@@ -73,13 +73,40 @@ module.exports = function(el) {
 	    }
 	},
 
+	intersects1D = function(leftA, rightA, leftB, rightB) {
+	    if (leftA <= leftB) {
+		// A's sides either side of leftB
+		return rightA >= leftB;
+	    } else {
+		// B's sides either side of leftA
+		return leftA <= rightB
+		// A contained within B.
+		    || rightA <= rightB;
+	    }
+	},
+
+	intersects = function(a, b) {
+	    return intersects1D(a.left, a.right, b.left, b.right)
+		&& intersects1D(a.top, a.bottom, b.top, b.bottom);
+	},
+
+	enlarge = function(bbox) {
+	    return {
+		left: bbox.left - stickyness,
+		top: bbox.top - stickyness,
+		right: bbox.right + stickyness,
+		bottom: bbox.bottom + stickyness
+	    };
+	},
+
 	maybeDock = function(bbox, modifyLeft, modifyTop, modifyRight, modifyBottom) {
 	    if (!stickyness) {
 		return;
 	    }
 
 	    var stuckHorizontal = false,
-		stuckVertical = false;
+		stuckVertical = false,
+		enlarged = enlarge(bbox);
 
 	    dialogues.values().forEach(function(dialogue) {
 		if (dialogue.id === id || (stuckVertical && stuckHorizontal) || !dialogue.visible()) {
@@ -87,12 +114,15 @@ module.exports = function(el) {
 		} else {
 		    var target = dialogue.el().node().getBoundingClientRect();
 
-		    if (!stuckHorizontal) {
-			stuckHorizontal = maybeDockSide(modifyLeft, bbox.left, target.right) || maybeDockSide(modifyRight, bbox.right, target.left);
-		    }
+		    if (intersects(enlarged, target)) {
 
-		    if (!stuckVertical) {
-			stuckVertical = maybeDockSide(modifyTop, bbox.top, target.bottom) || maybeDockSide(modifyBottom, bbox.bottom, target.top);
+			if (!stuckHorizontal) {
+			    stuckHorizontal = maybeDockSide(modifyLeft, bbox.left, target.right) || maybeDockSide(modifyRight, bbox.right, target.left);
+			}
+
+			if (!stuckVertical) {
+			    stuckVertical = maybeDockSide(modifyTop, bbox.top, target.bottom) || maybeDockSide(modifyBottom, bbox.bottom, target.top);
+			}
 		    }
 		}
 	    });
