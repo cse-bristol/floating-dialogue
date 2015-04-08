@@ -85,11 +85,9 @@ module.exports = function(el) {
 		if (dialogue.id === id || (stuckVertical && stuckHorizontal) || !dialogue.visible()) {
 		    return;
 		} else {
-		    console.log("ids", id, dialogue.id);
 		    var target = dialogue.el().node().getBoundingClientRect();
 
 		    if (!stuckHorizontal) {
-			console.log("left", bbox.left, target.right, "right", bbox.right, target.left);
 			stuckHorizontal = maybeDockSide(modifyLeft, bbox.left, target.right) || maybeDockSide(modifyRight, bbox.right, target.left);
 		    }
 
@@ -98,7 +96,6 @@ module.exports = function(el) {
 		    }
 		}
 	    });
-	    console.log(stuckHorizontal, stuckVertical);
 	},
 
 	visibility = function(show, targetButton) {
