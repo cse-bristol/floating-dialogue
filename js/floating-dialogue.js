@@ -37,7 +37,12 @@ var d3 = require("d3"),
     },
     // Values found by trial and error. I wouldn't expect these to be exact at different zoom levels, but they seem to work quite well.
     xBuffer = 30,
-    yBuffer = 52;
+    yBuffer = 52,
+
+    noop = function() {},
+
+    // List of all the dialogues which have been created, but not removed, by id.
+    dialogues = d3.map();
 
 /*
  Provides some functions which can be applied to an HTML element.
@@ -46,13 +51,55 @@ module.exports = function(el) {
     var openButtons,
 	currentOpenButton,
 	closeButton,
+	stickyness = 0,
+	id = Math.random(),
 	manuallyPositioned = false,
 	manuallySized = false,
 	onVisibilityChanged = callbacks(),
 	onPositionChanged = callbacks(),
 	onSizeChanged = callbacks(),
+	onRemove = callbacks(),
 	content = el.append("div")
 	    .classed("content", true),
+
+	maybeDockSide = function(modify, original, target) {
+	    var val = target - original;
+
+	    if (Math.abs(val) < stickyness) {
+		modify(val);
+		return true;
+	    } else {
+		return false;
+	    }
+	},
+
+	maybeDock = function(bbox, modifyLeft, modifyTop, modifyRight, modifyBottom) {
+	    if (!stickyness) {
+		return;
+	    }
+
+	    var stuckHorizontal = false,
+		stuckVertical = false;
+
+	    dialogues.values().forEach(function(dialogue) {
+		if (dialogue.id === id || (stuckVertical && stuckHorizontal) || !dialogue.visible()) {
+		    return;
+		} else {
+		    console.log("ids", id, dialogue.id);
+		    var target = dialogue.el().node().getBoundingClientRect();
+
+		    if (!stuckHorizontal) {
+			console.log("left", bbox.left, target.right, "right", bbox.right, target.left);
+			stuckHorizontal = maybeDockSide(modifyLeft, bbox.left, target.right) || maybeDockSide(modifyRight, bbox.right, target.left);
+		    }
+
+		    if (!stuckVertical) {
+			stuckVertical = maybeDockSide(modifyTop, bbox.top, target.bottom) || maybeDockSide(modifyBottom, bbox.bottom, target.top);
+		    }
+		}
+	    });
+	    console.log(stuckHorizontal, stuckVertical);
+	},
 
 	visibility = function(show, targetButton) {
 	    if (openButtons !== undefined) {
@@ -91,10 +138,25 @@ module.exports = function(el) {
 	    );
 	},
 
-	setSize = function(width, height) {
+	setSize = function(width, height, human) {
 	    var x = parseInt(el.style("left")),
-		y = parseInt(el.style("top"));
-	    
+		y = parseInt(el.style("top")),
+		paddingRight = parseFloat(el.style("padding-right")),
+		paddingBottom = parseFloat(el.style("padding-bottom"));
+
+	    if (human) {
+		maybeDock(
+		    {left: x, top: y, right: x + width + paddingRight, bottom: y + height + paddingBottom},
+		    noop,
+		    noop,
+		    function(deltaRight) {
+			width += deltaRight;
+		    },
+		    function(deltaTop) {
+			height += deltaTop;
+		    }
+		);
+	    }
 
 	    if (x) {
 		width = Math.min(
@@ -121,10 +183,30 @@ module.exports = function(el) {
 	    manuallySized = true;
 	},
 
-	setPosition = function(x, y) {
+	setPosition = function(x, y, human) {
 	    var width = parseInt(el.style("width")),
-		height = parseInt(el.style("height"));
+		height = parseInt(el.style("height")),
+		paddingRight = parseFloat(el.style("padding-right")),
+		paddingBottom = parseFloat(el.style("padding-bottom"));
 
+	    if (width && height && human) {
+		maybeDock(
+		    {left: x, top: y, right: x + width + paddingRight, bottom: y + height + paddingBottom},
+		    function(leftChange) {
+			x += leftChange;
+		    },
+		    function(topChange) {
+			y += topChange;
+		    },
+		    function(rightChange) {
+			x += rightChange;
+		    },
+		    function(bottomChange) {
+			y += bottomChange;
+		    }
+		);
+	    }
+	    
 	    if (width) {
 		x = Math.min(
 		    x,
@@ -152,6 +234,8 @@ module.exports = function(el) {
 	};
 
     var m = {
+	id: id,
+	
 	drag: function() {
 	    el
 		.style("cursor", "move")
@@ -175,7 +259,7 @@ module.exports = function(el) {
 		    })
 		    .on("drag", function(d){
 			d3.event.sourceEvent.preventDefault();
-			setPosition(d3.event.x, d3.event.y);
+			setPosition(d3.event.x, d3.event.y, true);
 			onPositionChanged([d3.event.x, d3.event.y]);
 		    })
 	    );
@@ -247,17 +331,17 @@ module.exports = function(el) {
 	 */
 	resize: function() {
 	    var dragHandle = d3.behavior.drag()
-		    .origin(function(d){
+		    .origin(function(d) {
 			return {
 			    "x" : parseInt(el.style("width")),
 			    "y" : parseInt(el.style("height"))
 			};
 		    })
-		    .on("dragstart", function(d){
+		    .on("dragstart", function(d) {
 			d3.event.sourceEvent.stopPropagation();
 		    })
-		    .on("drag", function(d){
-			setSize(d3.event.x, d3.event.y);
+		    .on("drag", function(d) {
+			setSize(d3.event.x, d3.event.y, true);
 			onSizeChanged([d3.event.x, d3.event.y]);
 		    });
 
@@ -322,6 +406,13 @@ module.exports = function(el) {
 	    return el;
 	},
 
+	remove: function() {
+	    onRemove(m);
+	    el.remove();
+	},
+
+	onRemove: onRemove.add,
+
 	manuallySized: function() {
 	    return manuallySized;
 	},
@@ -362,6 +453,15 @@ module.exports = function(el) {
 	    ];
 	},
 
+	/*
+	 Causes this dialogue to have a stickyness/snapping/docking behaviour towards other dialogues when it is being moved or resized. 
+	 */
+	sticky: function(newStickyness) {
+	    stickyness = newStickyness || 20;
+	    
+	    return m;
+	},
+
 	onVisibilityChanged: onVisibilityChanged.add,
 	onPositionChanged: onPositionChanged.add,
 	onSizeChanged: onSizeChanged.add
@@ -387,6 +487,11 @@ module.exports = function(el) {
 		);
 	    }
 	});
+
+    dialogues.set(id, m);
+    m.onRemove(function(m) {
+	dialogues.remove(id);
+    });
 
     return m;
 };
