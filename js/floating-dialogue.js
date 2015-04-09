@@ -164,22 +164,27 @@ module.exports = function(el) {
 	},
 
 	setSize = function(width, height) {
-	    var node = el.node();
+	    var bbox = el.node().getBoundingClientRect(),
+
+		innerWidth = parseInt(el.style("width")),
+		innerHeight = parseInt(el.style("height")),
+
+		dWidth = width - innerWidth,
+		dHeight = height - innerHeight;
 	    
-	    width = Math.min(
-		width,
-		window.innerWidth - node.offsetLeft
+	    width = innerWidth + Math.min(
+		dWidth,
+		window.innerWidth - bbox.right
 	    );
 	    
-	    height = Math.min(
-		height,
-		window.innerHeight - node.offsetTop
+	    height = innerHeight + Math.min(
+		dHeight,
+		window.innerHeight - bbox.bottom
 	    );
 
 	    /*
 	     No need to set a minimum width, since this is already handled by a css property.
 	     */
-	    
 	    el
 		.style("width", width + "px")
 		.style("height", height + "px");
@@ -188,16 +193,19 @@ module.exports = function(el) {
 	},
 
 	setPosition = function(x, y) {
-	    var bbox = el.node().getBoundingClientRect();
+	    var bbox = el.node().getBoundingClientRect(),
 
-	    x = Math.min(
-		x,
-		window.innerWidth - el.node().offsetWidth
-	    );		   
+		dx = x - bbox.left,
+		dy = y - bbox.top;
+	    
+	    x = bbox.left + Math.min(
+		dx,
+		window.innerWidth - bbox.right
+	    );	   
 
-	    y = Math.min(
-		y,
-		window.innerHeight - el.node().offsetHeight
+	    y = bbox.top + Math.min(
+		dy,
+		window.innerHeight - bbox.bottom
 	    );
 
 	    x = Math.max(x, 0);
