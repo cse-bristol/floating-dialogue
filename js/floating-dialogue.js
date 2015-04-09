@@ -117,11 +117,13 @@ module.exports = function(el) {
 		    if (intersects(enlarged, target)) {
 
 			if (!stuckHorizontal) {
-			    stuckHorizontal = maybeDockSide(modifyLeft, bbox.left, target.right) || maybeDockSide(modifyRight, bbox.right, target.left);
+			    stuckHorizontal = maybeDockSide(modifyLeft, bbox.left, target.right) || maybeDockSide(modifyRight, bbox.right, target.left)
+				|| maybeDockSide(modifyLeft, bbox.left, target.left) || maybeDockSide(modifyRight, bbox.right, target.right);
 			}
 
 			if (!stuckVertical) {
-			    stuckVertical = maybeDockSide(modifyTop, bbox.top, target.bottom) || maybeDockSide(modifyBottom, bbox.bottom, target.top);
+			    stuckVertical = maybeDockSide(modifyTop, bbox.top, target.bottom) || maybeDockSide(modifyBottom, bbox.bottom, target.top)
+				|| maybeDockSide(modifyTop, bbox.top, target.top) || maybeDockSide(modifyBottom, bbox.bottom, target.bottom);
 			}
 		    }
 		}
