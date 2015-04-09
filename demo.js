@@ -28,7 +28,15 @@ var d3 = require("d3"),
 	.style("width", "10em")
 	.style("height", "4em")
 	.style("border", "1px solid red")
-	.style("background-color", "grey");
+	.style("background-color", "grey"),
+
+    el3 = body.append("div")
+	.style("padding-top", "1em")
+	.style("padding-left", "1em")
+	.style("width", "10em")
+	.style("height", "4em")
+	.style("border", "1px solid red")
+	.style("background-color", "green");
 
 floatDialogue(el)
     .drag()
@@ -53,5 +61,12 @@ floatDialogue(el2)
     .text("Standalone");
 
 
-
+floatDialogue(el3)
+    .drag()
+    .resize()
+    .show()
+    .sticky()
+    .findSpace()
+    .content()
+    .text("Automatically positioned in a free space");
 

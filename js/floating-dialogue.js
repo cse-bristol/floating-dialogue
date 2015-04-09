@@ -49,7 +49,7 @@ module.exports = function(el) {
 	currentOpenButton,
 	closeButton,
 	stickyness = 0,
-	id = Math.random(),
+	id = "" + Math.random(),
 	manuallyPositioned = false,
 	manuallySized = false,
 	onVisibilityChanged = callbacks(),
@@ -505,6 +505,81 @@ module.exports = function(el) {
 	sticky: function(newStickyness) {
 	    stickyness = newStickyness || 20;
 	    
+	    return m;
+	},
+
+	/*
+	 (Has no effect on dialogues which have already been manually positioned.)
+
+	 Checks if it intersects with any other dialogues.
+
+	 If it doesn't, make no changes.
+
+	 Otherwise, move in the specified direction until we find a space.
+
+	 If we can't find a space, go back to our starting place, make a quarter turn, then try again.
+
+	 A dialogue which is positioned using this function will not count as having been manually positioned at the end.
+	 */
+	findSpace: function(directionVector, attempts) {
+	    directionVector = directionVector || [0, 1];
+	    attempts = attempts || 0;
+
+	    if (attempts > 3 || manuallyPositioned) {
+		// No-op
+		return m;
+	    }
+
+	    var bbox = el.node().getBoundingClientRect(),
+		stuck = false;
+
+	    dialogues.forEach(function(targetId, targetDialogue) {
+		if (stuck || targetId === id) {
+		    return;
+
+		} else {
+		    var target = targetDialogue.el().node().getBoundingClientRect();
+
+		    if (intersects(el.node().getBoundingClientRect(), target)) {
+			// Move far enough to avoid the box we're colliding with.
+			var dx = directionVector[0] >= 0 ? (target.right - bbox.left) : (target.left - bbox.right),
+			    dy = directionVector[1] >= 0 ? (target.bottom - bbox.top) : (target.right - bbox.left);
+
+			// Add a little clearance.
+			dx += 1;
+			dy += 1;
+
+			// Make sure we're going in the right direction.
+			dx *= directionVector[0];
+			dy *= directionVector[1];
+
+			setPosition(
+			    bbox.left + dx,
+			    bbox.top + dy
+			);
+			manuallyPositioned = false;
+			
+			if (intersects(el.node().getBoundingClientRect(), target)) {
+			    // Reverse our move: we failed to find a space in this direction.
+			    stuck = true;
+			    setPosition(bbox.left, bbox.top);
+			    manuallyPositioned = false;
+			}
+		    }
+		}
+	    });
+
+	    if (stuck) {
+		m.findSpace(
+		    // Rotate our direction vector and try again.
+		    [
+			directionVector[0] * 1,
+			directionVector[1] * -1
+		    ],
+		    attempts + 1
+		);
+	    }
+
 	    return m;
 	},
 
