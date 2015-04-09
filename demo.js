@@ -6,6 +6,8 @@ var d3 = require("d3"),
     body = d3.select(document.body),
     floatDialogue = require("./js/floating-dialogue.js"),
     el = body.append("div")
+	.style("padding-top", "1em")
+	.style("padding-left", "1em")
 	.style("width", "10em")
 	.style("height", "4em")
 	.style("border", "1px solid red")
@@ -21,6 +23,8 @@ var d3 = require("d3"),
 	.style("position", "absolute"),
 
     el2 = body.append("div")
+	.style("padding-top", "1em")
+	.style("padding-left", "1em")
 	.style("width", "10em")
 	.style("height", "4em")
 	.style("border", "1px solid red")

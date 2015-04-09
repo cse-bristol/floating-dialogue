@@ -35,9 +35,6 @@ var d3 = require("d3"),
 
 	return f;
     },
-    // Values found by trial and error. I wouldn't expect these to be exact at different zoom levels, but they seem to work quite well.
-    xBuffer = 30,
-    yBuffer = 52,
 
     noop = function() {},
 
@@ -115,7 +112,6 @@ module.exports = function(el) {
 		    var target = dialogue.el().node().getBoundingClientRect();
 
 		    if (intersects(enlarged, target)) {
-
 			if (!stuckHorizontal) {
 			    stuckHorizontal = maybeDockSide(modifyLeft, bbox.left, target.right) || maybeDockSide(modifyRight, bbox.right, target.left)
 				|| maybeDockSide(modifyLeft, bbox.left, target.left) || maybeDockSide(modifyRight, bbox.right, target.right);
@@ -167,39 +163,18 @@ module.exports = function(el) {
 	    );
 	},
 
-	setSize = function(width, height, human) {
-	    var x = parseInt(el.style("left")),
-		y = parseInt(el.style("top")),
-		paddingRight = parseFloat(el.style("padding-right")),
-		paddingBottom = parseFloat(el.style("padding-bottom"));
-
-	    if (human) {
-		maybeDock(
-		    {left: x, top: y, right: x + width + paddingRight, bottom: y + height + paddingBottom},
-		    noop,
-		    noop,
-		    function(deltaRight) {
-			width += deltaRight;
-		    },
-		    function(deltaTop) {
-			height += deltaTop;
-		    }
-		);
-	    }
-
-	    if (x) {
-		width = Math.min(
-		    width,
-		    window.innerWidth - x - xBuffer
-		);
-	    }
+	setSize = function(width, height) {
+	    var node = el.node();
 	    
-	    if (y) {
-		height = Math.min(
-		    height,
-		    window.innerHeight - y - yBuffer
-		);
-	    }
+	    width = Math.min(
+		width,
+		window.innerWidth - node.offsetLeft
+	    );
+	    
+	    height = Math.min(
+		height,
+		window.innerHeight - node.offsetTop
+	    );
 
 	    /*
 	     No need to set a minimum width, since this is already handled by a css property.
@@ -212,43 +187,18 @@ module.exports = function(el) {
 	    manuallySized = true;
 	},
 
-	setPosition = function(x, y, human) {
-	    var width = parseInt(el.style("width")),
-		height = parseInt(el.style("height")),
-		paddingRight = parseFloat(el.style("padding-right")),
-		paddingBottom = parseFloat(el.style("padding-bottom"));
+	setPosition = function(x, y) {
+	    var bbox = el.node().getBoundingClientRect();
 
-	    if (width && height && human) {
-		maybeDock(
-		    {left: x, top: y, right: x + width + paddingRight, bottom: y + height + paddingBottom},
-		    function(leftChange) {
-			x += leftChange;
-		    },
-		    function(topChange) {
-			y += topChange;
-		    },
-		    function(rightChange) {
-			x += rightChange;
-		    },
-		    function(bottomChange) {
-			y += bottomChange;
-		    }
-		);
-	    }
-	    
-	    if (width) {
-		x = Math.min(
-		    x,
-		    window.innerWidth - width - xBuffer
-		);		   
-	    }
+	    x = Math.min(
+		x,
+		window.innerWidth - el.node().offsetWidth
+	    );		   
 
-	    if (height) {
-		y = Math.min(
-		    y,
-		    window.innerHeight - height - yBuffer
-		);
-	    }
+	    y = Math.min(
+		y,
+		window.innerHeight - el.node().offsetHeight
+	    );
 
 	    x = Math.max(x, 0);
 	    y = Math.max(y, 0);
@@ -260,7 +210,10 @@ module.exports = function(el) {
 		.style("right", null);
 
 	    manuallyPositioned = true;	    
-	};
+	},
+
+	// Used by drag and resize to keep track.
+	originBBox;
 
     var m = {
 	id: id,
@@ -277,19 +230,50 @@ module.exports = function(el) {
 		el.style("top", 0);
 	    }
 
-	    
 	    el.call(
 		d3.behavior.drag()
-		    .origin(function(d){
+		    .origin(function() {
+			originBBox = el.node().getBoundingClientRect();
 			return {
-			    "x" : parseInt(el.style("left")),
-			    "y" : parseInt(el.style("top"))
+			    x: 0,
+			    y: 0
 			};
 		    })
 		    .on("drag", function(d){
 			d3.event.sourceEvent.preventDefault();
-			setPosition(d3.event.x, d3.event.y, true);
-			onPositionChanged([d3.event.x, d3.event.y]);
+
+			var node = el.node(),
+			    // Accumulated change over this whole drag gesture.
+			    dx = d3.event.x,
+			    dy = d3.event.y,
+			    
+			    translated = {
+				left: originBBox.left + dx,
+				right : originBBox.right + dx,
+				top: originBBox.top + dy,
+				bottom: originBBox.bottom + dy,
+				width: originBBox.width,
+				height: originBBox.height
+			    };
+
+			maybeDock(
+			    translated,
+			    function(leftChange) {
+				dx += leftChange;
+			    },
+			    function(topChange) {
+				dy += topChange;
+			    },
+			    function(rightChange) {
+				dx += rightChange;
+			    },
+			    function(bottomChange) {
+				dy += bottomChange;
+			    }
+			);
+			
+			setPosition(originBBox.left + dx, originBBox.top + dy);
+			onPositionChanged([node.offsetLeft, node.offsetTop]);
 		    })
 	    );
 
@@ -361,17 +345,50 @@ module.exports = function(el) {
 	resize: function() {
 	    var dragHandle = d3.behavior.drag()
 		    .origin(function(d) {
+			originBBox = el.node().getBoundingClientRect();
+			originBBox.innerWidth = parseInt(el.style("width"));
+			originBBox.innerHeight = parseInt(el.style("height"));
+			
 			return {
-			    "x" : parseInt(el.style("width")),
-			    "y" : parseInt(el.style("height"))
+			    x: 0,
+			    y: 0
 			};
 		    })
 		    .on("dragstart", function(d) {
 			d3.event.sourceEvent.stopPropagation();
 		    })
 		    .on("drag", function(d) {
-			setSize(d3.event.x, d3.event.y, true);
-			onSizeChanged([d3.event.x, d3.event.y]);
+			var node = el.node(),
+			    
+			    // Accumulated change over this whole drag gesture.
+			    dWidth = d3.event.x,
+			    dHeight = d3.event.y,
+			    translated = {
+				left: originBBox.left,
+				top: originBBox.top,
+				right: originBBox.right + dWidth,
+				bottom: originBBox.bottom + dHeight,
+				width: originBBox.width + dWidth,
+				height: originBBox.height + dHeight
+			    };
+
+			maybeDock(
+			    translated,
+			    noop,
+			    noop,
+			    function(deltaRight) {
+				dWidth += deltaRight;
+			    },
+			    function(deltaTop) {
+				dHeight += deltaTop;
+			    }
+			);
+
+			setSize(originBBox.innerWidth + dWidth, originBBox.innerHeight + dHeight);
+			onSizeChanged([
+			    parseInt(el.style("width")),
+			    parseInt(el.style("height"))
+			]);
 		    });
 
 	    el
