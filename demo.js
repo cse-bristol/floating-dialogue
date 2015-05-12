@@ -41,13 +41,11 @@ var d3 = require("d3"),
 	fact.loadData({
 	    id: 0,
 	    size: [200, 200],
-	    position: [100, 100],
 	    visible: true
 	}),
 	fact.loadData({
 	    id: 1,
 	    size: [200, 100],
-	    position: [200, 200],
 	    visible: true
 	})	
     ],

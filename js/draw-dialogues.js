@@ -13,6 +13,23 @@ var d3 = require("d3"),
     z = 10,
     getNextZ = function() {
 	return z++;
+    },
+
+    intersects1D = function(leftA, rightA, leftB, rightB) {
+	if (leftA <= leftB) {
+	    // A's sides either side of leftB
+	    return rightA >= leftB;
+	} else {
+	    // B's sides either side of leftA
+	    return leftA <= rightB
+	    // A contained within B.
+		|| rightA <= rightB;
+	}
+    },
+
+    intersects = function(a, b) {
+	return intersects1D(a.left, a.right, b.left, b.right)
+	    && intersects1D(a.top, a.bottom, b.top, b.bottom);
     };
 
 module.exports = function(container, getDataById, redraw, typeId, options) {
@@ -27,11 +44,24 @@ module.exports = function(container, getDataById, redraw, typeId, options) {
      Sets the size and position of the dialogue element based on the data.
      */
     var drawSizeAndPosition = function(el, datum) {
-	var bbox = options.lockToScreen ? el.node().getBoundingClientRect() : null;
+	var bbox = (options.lockToScreen || options.findSpace) ? el.node().getBoundingClientRect() : null,
+	    manuallyPositioned = datum.manuallyPositioned(),
+	    manuallySized = datum.manuallySized();
 
-	drawPosition(el, datum.manuallyPositioned(), datum.getLeft(), datum.getTop(), bbox);
+	drawSize(
+	    el,
+	    manuallySized,
+	    manuallySized ? datum.getWidth() : null,
+	    manuallySized ? datum.getHeight() : null,
+	    bbox
+	);
 
-	drawSize(el, datum.manuallySized(), datum.getWidth(), datum.getHeight(), bbox);	
+	drawPosition(
+	    el,
+	    manuallyPositioned,
+	    manuallyPositioned ? datum.getLeft() : null,
+	    manuallyPositioned ? datum.getTop() : null,
+	    bbox);
     },
 
 	drawPosition = function(el, manuallyPositioned, x, y, bbox) {
@@ -65,6 +95,7 @@ module.exports = function(container, getDataById, redraw, typeId, options) {
 		    .style("right", null);	    
 		
 	    } else {
+		// Position the dialogue according to whatever CSS applies to it.
 		el.style("left", null)
 		    .style("top", null);
 	    }
@@ -99,6 +130,55 @@ module.exports = function(container, getDataById, redraw, typeId, options) {
 		el.style("width", null)
 		    .style("height", null);
 	    }
+	},
+
+	maybeFindSpace = function(el, d) {
+	    if (!d.manuallyPositioned()) {
+		var dialogues = d3.selectAll("." + dialogueClass),
+		    directionVector = [0, 1],
+	    	    len = dialogues.size(),
+	    	    i = 0,
+		    bbox = el.node().getBoundingClientRect(),
+
+	    	    x = parseInt(el.style("left")) || 0,
+	    	    y = parseInt(el.style("top")) || 0;		
+
+	    	while (i < len) {
+	    	    var dialogue = d3.select(dialogues[0][i]);
+
+	    	    if (el.datum().id !== dialogue.datum().id) {
+	    		var target = dialogue.node().getBoundingClientRect();
+
+	    		if (intersects(bbox, target)) {
+	    		    // Move far enough to avoid the box we're colliding with.
+	    		    var dx = directionVector[0] >= 0 ? (target.right - bbox.left) : (target.left - bbox.right),
+	    			dy = directionVector[1] >= 0 ? (target.bottom - bbox.top) : (target.right - bbox.left);
+
+	    		    // Add a little clearance.
+	    		    dx += 1;
+	    		    dy += 1;
+
+	    		    // Make sure we're going in the right direction.
+	    		    dx *= directionVector[0];
+	    		    dy *= directionVector[1];
+
+	    		    x += dx;
+	    		    y += dy;
+
+	    		    el
+	    			.style("left", x + "px")
+	    			.style("top", y + "px")
+	    			.style("right", null)
+	    			.style("bottom", null);
+			    
+	    		    bbox = el.node().getBoundingClientRect();
+	    		    i = 0;
+	    		}
+	    	    }
+
+	    	    i++;
+		}
+	    }
 	};
     
     return function(data) {
@@ -120,32 +200,6 @@ module.exports = function(container, getDataById, redraw, typeId, options) {
 	dialogues.classed(hideClass, function(d, i) {
 	    return !d.getVisibility();
 	});
-
-	dialogues.each(function(d, i) {
-	    drawSizeAndPosition(d3.select(this), d);
-	});
-
-	dialogues
-	    .filter(function(d, i) {
-		return d.manuallyPositioned();
-	    })
-	    .style("left", function(d, i) {
-		return d.getLeft() + "px";
-	    })
-	    .style("top", function(d, i) {
-		return d.getTop() + "px";
-	    });	
-
-	dialogues
-	    .filter(function(d, i) {
-		return d.manuallySized();
-	    })
-	    .style("width", function(d, i) {
-		return d.getWidth() + "px";
-	    })
-	    .style("height", function(d, i) {
-		return d.getHeight() + "px";
-	    });
 
 	if (options.reposition) {
 	    newDialogues
@@ -285,12 +339,6 @@ module.exports = function(container, getDataById, redraw, typeId, options) {
 		);
 	}
 
-	if (options.findSpace !== undefined) {
-	    // unitDirectionVector, attempts
-	    
-	    // do this for new elements only
-	}
-
 	if (options.bringToFront) {
 	    newDialogues
 	    // This padding prevents us from make the box too small to resize.
@@ -304,6 +352,17 @@ module.exports = function(container, getDataById, redraw, typeId, options) {
 			.style("z-index", getNextZ());
 		});
 	}
+
+	dialogues
+	    .each(function(d, i) {
+		drawSizeAndPosition(d3.select(this), d);
+	    });
+
+	if (options.findSpace) {
+	    dialogues.each(function(d, i) {
+		maybeFindSpace(d3.select(this), d);
+	    });
+	}	
 
 	return {
 	    dialogues: dialogues,
