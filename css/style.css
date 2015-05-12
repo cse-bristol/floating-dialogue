@@ -1,0 +1,48 @@
+.open-button {
+    font-size: xx-large;
+    font-family: monospace;
+    padding: 0.2em;
+    text-align: center;
+    cursor: pointer;
+    color: black;
+    background-color: #E0E0E0;    
+}
+
+.open-button.element-hidden {
+    color: white;
+    background-color: #181818;    
+}
+
+.floating-dialogue {
+    position: absolute;
+}
+
+.floating-dialogue.element-hidden {
+    visibility: hidden;
+}
+
+.close-button {
+    font-size: x-large;
+    font-family: monospace;
+    position: absolute;
+    top: 0;
+    right:5px;
+    cursor: pointer;
+}
+
+.resize-dialogue {
+    font-size: xx-large;
+    font-family: monospace;
+    position: absolute;
+    bottom: 0;
+    right: 5px;
+}
+
+.bring-to-front {
+    font-family: monospace;
+    font-wieght: bold;
+    position: absolute;
+    right: 2em;
+    bottom: 0.2em;
+    cursor: pointer;
+}

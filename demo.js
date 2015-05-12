@@ -4,69 +4,68 @@
 
 var d3 = require("d3"),
     body = d3.select(document.body),
-    floatDialogue = require("./js/floating-dialogue.js"),
-    el = body.append("div")
-	.style("padding-top", "1em")
-	.style("padding-left", "1em")
-	.style("width", "10em")
-	.style("height", "4em")
-	.style("border", "1px solid red")
-	.style("background-color", "pink"),
-    button = body.append("div")
-	.text("Open/Close Button")
+    dialogue = require("./js/index.js"),
+
+    getData = function(id) {
+	return data[id];
+    },
+
+    redraw = function() {
+	var dialogues = fact.draw(data);
+	dialogues.newDialogues
+	    .style("border", "1px solid red")
+	    .style("background-color", function(d, i) {
+		return ["pink", "green"][i];
+	    });
+	
+	fact.buttons(buttons, newButtons);
+    },
+
+    fact = dialogue(
+	body,
+	getData,
+	redraw,
+	"demo-dialogue",
+	{
+	    reposition: true,
+	    close: true,
+	    resize: true,
+	    sticky: true,
+	    bringToFront: true,
+	    findSpace: true,
+	    lockToScreen: true
+	}
+    ),
+
+    data = [
+	fact.loadData({
+	    id: 0,
+	    size: [200, 200],
+	    position: [100, 100],
+	    visible: true
+	}),
+	fact.loadData({
+	    id: 1,
+	    size: [200, 100],
+	    position: [200, 200],
+	    visible: true
+	})	
+    ],
+
+    buttons = body.selectAll("div.button")
+	.data(data),
+
+    newButtons = buttons
+	.enter()
+	.append("div")
+	.classed("button", true)
+	.text(function(d, i) {
+	    return "Open/Close Button " + i;
+	})
 	.style("right", "1vw")
-	.style("position", "absolute"),
-    button2 = body.append("div")
-	.text("Button 2")
-	.style("right", "1vw")
-	.style("top", "2em")
-	.style("position", "absolute"),
+	.style("top", function(d, i) {
+	    return (1 + (i * 2)) + "em";
+	})
+	.style("position", "absolute");
 
-    el2 = body.append("div")
-	.style("padding-top", "1em")
-	.style("padding-left", "1em")
-	.style("width", "10em")
-	.style("height", "4em")
-	.style("border", "1px solid red")
-	.style("background-color", "grey"),
-
-    el3 = body.append("div")
-	.style("padding-top", "1em")
-	.style("padding-left", "1em")
-	.style("width", "10em")
-	.style("height", "4em")
-	.style("border", "1px solid red")
-	.style("background-color", "green");
-
-floatDialogue(el)
-    .drag()
-    .resize()
-    .show()
-    .sticky()
-    .open(d3.selectAll([button.node(), button2.node()]))
-    .close()
-    .size([200, 200])
-    .position([100, 100])
-    .bringToFront()
-    .content()
-    .text("Connected to Buttons");
-
-floatDialogue(el2)
-    .drag()
-    .resize()
-    .show()
-    .sticky()
-    .bringToFront()
-    .content()
-    .text("Standalone");
-
-
-floatDialogue(el3)
-    .drag()
-    .resize()
-    .show()
-    .sticky()
-    .findSpace()
-    .content()
-    .text("Automatically positioned in a free space");
-
+redraw();
