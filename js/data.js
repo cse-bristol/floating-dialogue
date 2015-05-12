@@ -37,7 +37,7 @@ module.exports = function(options) {
 	    },
 
 	    setSize: function(width, height) {
-		if (width !== size[0] && height !== size[1]) {
+		if (!size || (width !== size[0] && height !== size[1])) {
 		    size = [width, height];
 
 		    if (options.onSizeChanged) {
@@ -71,7 +71,7 @@ module.exports = function(options) {
 	    },
 
 	    setPosition: function(left, top) {
-		if (left !== position[0] && top !== position[1]) {
+		if (!position || (left !== position[0] && top !== position[1])) {
 		    position = [left, top];
 
 		    if (options.onPositionChanged) {
