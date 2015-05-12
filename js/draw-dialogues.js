@@ -10,9 +10,14 @@ var d3 = require("d3"),
     resizeButtonClass = "resize-dialgoue",
     bringToFrontClass = "bring-to-front",
 
+    stickyness = 20,
+
     z = 10,
     getNextZ = function() {
 	return z++;
+    },
+
+    noop = function() {
     },
 
     intersects1D = function(leftA, rightA, leftB, rightB) {
@@ -92,7 +97,7 @@ module.exports = function(container, getDataById, redraw, typeId, options) {
 		    .style("left", x + "px")
 		    .style("top", y + "px")
 		    .style("bottom", null)
-		    .style("right", null);	    
+		    .style("right", null);
 		
 	    } else {
 		// Position the dialogue according to whatever CSS applies to it.
@@ -179,7 +184,64 @@ module.exports = function(container, getDataById, redraw, typeId, options) {
 	    	    i++;
 		}
 	    }
-	};
+	},
+
+	enlarge = function(bbox) {
+	    return {
+		left: bbox.left - stickyness,
+		top: bbox.top - stickyness,
+		right: bbox.right + stickyness,
+		bottom: bbox.bottom + stickyness
+	    };
+	},
+
+	maybeDockSide = function(modify, original, target) {
+	    var val = target - original;
+
+	    if (Math.abs(val) < stickyness) {
+		modify(val);
+		return false;
+	    } else {
+		return true;
+	    }
+	},
+
+	maybeDock = function(id, bbox, modifyLeft, modifyTop, modifyRight, modifyBottom) {
+	    if (options.sticky) {
+
+		var stickHorizontal = true,
+		    stickVertical = true,
+		    enlarged = enlarge(bbox),
+		    dialogues = d3.selectAll("." + dialogueClass),
+		    i = 0,
+		    len = dialogues.size();
+
+		while ((stickHorizontal || stickVertical) && i < len) {
+		    var dialogue = d3.select(
+			dialogues[0][i]
+		    );
+
+		    if (dialogue.datum().getVisibility() && dialogue.datum().id !== id)  {
+			var target = dialogue.node().getBoundingClientRect();
+
+			if (intersects(enlarged, target)) {
+			    
+			    if (stickHorizontal) {
+				stickHorizontal = maybeDockSide(modifyLeft, bbox.left, target.right) && maybeDockSide(modifyRight, bbox.right, target.left)
+				    && maybeDockSide(modifyLeft, bbox.left, target.left) && maybeDockSide(modifyRight, bbox.right, target.right);
+			    }
+
+			    if (stickVertical) {
+				stickVertical = maybeDockSide(modifyTop, bbox.top, target.bottom) && maybeDockSide(modifyBottom, bbox.bottom, target.top)
+				    && maybeDockSide(modifyTop, bbox.top, target.top) && maybeDockSide(modifyBottom, bbox.bottom, target.bottom);
+			    }
+			}
+		    }
+		    
+		    i++;
+		}
+	    }
+	};	
     
     return function(data) {
 	var dialogues = container.selectAll("." + typeId)
@@ -227,7 +289,8 @@ module.exports = function(container, getDataById, redraw, typeId, options) {
 	    		    // Accumulated change over this whole drag gesture.
 	    		    dragDistance = [d3.event.x, d3.event.y];
 			    
-	    		    var	translated = {
+	    		    var el = d3.select(this),
+				translated = {
 	    			left: originalBBox.left + dragDistance[0],
 	    			right : originalBBox.right + dragDistance[0],
 	    			top: originalBBox.top + dragDistance[1],
@@ -236,12 +299,25 @@ module.exports = function(container, getDataById, redraw, typeId, options) {
 	    			height: originalBBox.height
 	    		    };
 
-			    // if (options.sticky) {
-			    // 	maybeDock(translated, moveDistance);
-			    // }
+			    maybeDock(
+				el.datum().id,
+				translated,
+				function(leftChange) {
+				    dragDistance[0] += leftChange;
+				},
+				function(topChange) {
+				    dragDistance[1] += topChange;
+				},
+				function(rightChange) {
+				    dragDistance[0] += rightChange;
+				},
+				function(bottomChange) {
+				    dragDistance[1] += bottomChange;
+				}				    
+			    );
 
 			    drawPosition(
-				d3.select(this),
+				el,
 				true,
 				originalCSS[0] + dragDistance[0],
 				originalCSS[1] + dragDistance[1],
@@ -305,7 +381,8 @@ module.exports = function(container, getDataById, redraw, typeId, options) {
 			})
 			.on("drag", function(d) {
 			    // Accumulated change over this whole drag gesture.
-			    var dragDistance = [d3.event.x, d3.event.y],
+			    var el = d3.select(this.parentNode),
+				dragDistance = [d3.event.x, d3.event.y],
 				translated = {
 				    left: originalBBox.left,
 				    top: originalBBox.top,
@@ -315,10 +392,19 @@ module.exports = function(container, getDataById, redraw, typeId, options) {
 				    height: originalBBox.height + dragDistance[1]
 				};
 
-			    // maybeDock(
-			    //     translated, dragDistance
-			    // );
-
+			    maybeDock(
+				el.datum().id,
+				translated,
+				noop,
+				noop,
+				function(deltaRight) {
+				    dragDistance[0] += deltaRight;
+				},
+				function(deltaTop) {
+				    dragDistance[1] += deltaTop;
+				}
+			    );
+			    
 			    drawSize(
 				d3.select(this.parentNode),
 				true,
