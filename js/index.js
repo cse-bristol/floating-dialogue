@@ -33,6 +33,8 @@ module.exports = function(container, getDataById, redraw, typeId, options) {
     var dataFactory = createData(options);
     
     return {
+	typeId: typeId,
+	
 	/*
 	 Create the underlying data for 1 dialogue of this type.
 	 */
