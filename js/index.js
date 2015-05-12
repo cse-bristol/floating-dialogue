@@ -23,11 +23,6 @@ var createData = require("./data.js"),
   + sticky (boolean) adds stickyness/snapping/docking behaviour towards other dialogues when being moved or resized
   + findSpace (boolean) causes new dialogues to attempt to find a free space which do not overlap another dialogues (unless they have a specific manual position already)
   + lockToScreen (boolean) locks the dialogue to fit inside the browser window when moving or resizing
-
- options may also contain the following events:
-  + onSizeChanged (function)
-  + onPositionChanged (function)
-  + onVisibilityChanged (function)
 */
 module.exports = function(container, getDataById, redraw, typeId, options) {
     var dataFactory = createData(options);

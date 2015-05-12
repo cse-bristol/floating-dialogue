@@ -4,6 +4,9 @@
 
 module.exports = function(options) {
     var data = function(id, size, position, visible) {
+	var onVisibilityChanged,
+	    onSizeChanged,
+	    onPositionChanged;
 
 	if (visible === undefined) {
 	    visible = true;
@@ -40,10 +43,14 @@ module.exports = function(options) {
 		if (!size || (width !== size[0] && height !== size[1])) {
 		    size = [width, height];
 
-		    if (options.onSizeChanged) {
-			options.onSizeChanged(id, size);
+		    if (onSizeChanged) {
+			onSizeChanged(id, size);
 		    }
 		}
+	    },
+
+	    onSizeChanged: function(f) {
+		onSizeChanged = f;
 	    },
 
 	    manuallyPositioned: function() {
@@ -74,10 +81,14 @@ module.exports = function(options) {
 		if (!position || (left !== position[0] && top !== position[1])) {
 		    position = [left, top];
 
-		    if (options.onPositionChanged) {
-			options.onPositionChanged(id, position);
+		    if (onPositionChanged) {
+			onPositionChanged(id, position);
 		    }
 		}
+	    },
+
+	    onPositionChanged: function(f) {
+		onPositionChanged = f;
 	    },
 
 	    getVisibility: function() {
@@ -88,10 +99,14 @@ module.exports = function(options) {
 		if (visible !== newVisibility) {
 		    visible = newVisibility;
 
-		    if (options.onVisibilityChanged) {
-			options.onVisibilityChanged(id, visible);
+		    if (onVisibilityChanged) {
+			onVisibilityChanged(id, visible);
 		    }
 		}
+	    },
+
+	    onVisibilityChanged: function(f) {
+		onVisibilityChanged = f;
 	    },
 
 	    serialize: function() {
