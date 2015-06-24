@@ -37,7 +37,7 @@ var d3 = require("d3"),
 	    && intersects1D(a.top, a.bottom, b.top, b.bottom);
     };
 
-module.exports = function(container, getDataById, redraw, typeId, options) {
+module.exports = function(container, getDataById, redraw, typeId, options, drawDialogueContent) {
     /*
      Properties used during drag action.
      */
@@ -241,218 +241,230 @@ module.exports = function(container, getDataById, redraw, typeId, options) {
 		    i++;
 		}
 	    }
-	};	
-    
-    return function(data) {
-	var dialogues = container.selectAll("." + typeId)
-		.data(
-		    data,
-		    function(d, i) {
-			return d.id;
-		    }
-		);
+	},
 
-	dialogues.exit().remove();
+	dialogueId = function(d) {
+	    return typeId + "-" + d.id;
+	},
 
-	var newDialogues = dialogues.enter()
-		.append("div")
-		.classed(dialogueClass, true)
-		.classed(typeId, true);
+	fromSelection = function(dialogues, newDialogues) {
+	    newDialogues = newDialogues.append("div")
+	    	.classed(dialogueClass, true)
+		.classed(typeId, true)
+		.attr("id", dialogueId);
 
-	dialogues.classed(hideClass, function(d, i) {
-	    return !d.getVisibility();
-	});
+	    dialogues.classed(hideClass, function(d, i) {
+		return !d.getVisibility();
+	    });
 
-	if (options.reposition) {
-	    newDialogues
-	    	.style("cursor", "move")
-	    	.call(
-	    	    d3.behavior.drag()
-	    		.origin(function() {
-			    var el = d3.select(this);
-			    
-	    		    originalBBox = this.getBoundingClientRect();
-			    originalCSS = [
-				parseInt(el.style("left")) || 0,
-				parseInt(el.style("top")) || 0
-			    ];
-			    dragDistance = null;
-			    
-	    		    return {
-	    			x: 0,
-	    			y: 0
-	    		    };
-	    		})
-	    		.on("drag", function() {
-	    		    d3.event.sourceEvent.preventDefault();
+	    if (options.reposition) {
+		newDialogues
+	    	    .style("cursor", "move")
+	    	    .call(
+	    		d3.behavior.drag()
+	    		    .origin(function() {
+				var el = d3.select(this);
+				
+	    			originalBBox = this.getBoundingClientRect();
+				originalCSS = [
+				    parseInt(el.style("left")) || 0,
+				    parseInt(el.style("top")) || 0
+				];
+				dragDistance = null;
+				
+	    			return {
+	    			    x: 0,
+	    			    y: 0
+	    			};
+	    		    })
+	    		    .on("drag", function() {
+	    			d3.event.sourceEvent.preventDefault();
 
-	    		    // Accumulated change over this whole drag gesture.
-	    		    dragDistance = [d3.event.x, d3.event.y];
-			    
-	    		    var el = d3.select(this),
-				translated = {
-	    			left: originalBBox.left + dragDistance[0],
-	    			right : originalBBox.right + dragDistance[0],
-	    			top: originalBBox.top + dragDistance[1],
-	    			bottom: originalBBox.bottom + dragDistance[1],
-	    			width: originalBBox.width,
-	    			height: originalBBox.height
-	    		    };
+	    			// Accumulated change over this whole drag gesture.
+	    			dragDistance = [d3.event.x, d3.event.y];
+				
+	    			var el = d3.select(this),
+				    translated = {
+	    				left: originalBBox.left + dragDistance[0],
+	    				right : originalBBox.right + dragDistance[0],
+	    				top: originalBBox.top + dragDistance[1],
+	    				bottom: originalBBox.bottom + dragDistance[1],
+	    				width: originalBBox.width,
+	    				height: originalBBox.height
+	    			    };
 
-			    maybeDock(
-				el.datum().id,
-				translated,
-				function(leftChange) {
-				    dragDistance[0] += leftChange;
-				},
-				function(topChange) {
-				    dragDistance[1] += topChange;
-				},
-				function(rightChange) {
-				    dragDistance[0] += rightChange;
-				},
-				function(bottomChange) {
-				    dragDistance[1] += bottomChange;
-				}				    
-			    );
+				maybeDock(
+				    el.datum().id,
+				    translated,
+				    function(leftChange) {
+					dragDistance[0] += leftChange;
+				    },
+				    function(topChange) {
+					dragDistance[1] += topChange;
+				    },
+				    function(rightChange) {
+					dragDistance[0] += rightChange;
+				    },
+				    function(bottomChange) {
+					dragDistance[1] += bottomChange;
+				    }				    
+				);
 
-			    drawPosition(
-				el,
-				true,
-				originalCSS[0] + dragDistance[0],
-				originalCSS[1] + dragDistance[1],
-				translated
-			    );
-	    		})
-			.on("dragend", function(d, i) {
-			    if (dragDistance) {
-				getDataById(d.id)
-				    .setPosition([
-					originalCSS[0] + dragDistance[0],
-					originalCSS[1] + dragDistance[1]
-				    ]);
-			    }
-			})
-		);
-	}
+				drawPosition(
+				    el,
+				    true,
+				    originalCSS[0] + dragDistance[0],
+				    originalCSS[1] + dragDistance[1],
+				    translated
+				);
+	    		    })
+			    .on("dragend", function(d, i) {
+				if (dragDistance) {
+				    getDataById(d.id)
+					.setPosition([
+					    originalCSS[0] + dragDistance[0],
+					    originalCSS[1] + dragDistance[1]
+					]);
+				}
+			    })
+		    );
+	    }
 
-	if (options.close) {
-	    var newCloseButtons = newDialogues
-	    // This padding provides space for the button.
+	    if (options.close) {
+		var newCloseButtons = newDialogues
+		// This padding provides space for the button.
+			.style("padding-right", "1.5em")
+			.append("span")
+			.classed("close-button", true)
+			.html("X");
+
+		newCloseButtons.on("click", function(d, i) {
+		    var data = getDataById(d.id);
+		    data.setVisibility(false);
+		    redraw(data);
+		});
+	    }
+
+	    if (options.resize) {
+		newDialogues
+		// This padding prevents us from make the box too small to resize.
+		    .style("padding-bottom", "3em")
+		// This padding provides space for the button.
 		    .style("padding-right", "1.5em")
 		    .append("span")
-		    .classed("close-button", true)
-		    .html("X");
-
-	    newCloseButtons.on("click", function(d, i) {
-		getDataById(d.id).setVisibility(false);
-		redraw();
-	    });
-	}
-
-	if (options.resize) {
-	    newDialogues
-	    // This padding prevents us from make the box too small to resize.
-		.style("padding-bottom", "3em")
-	    // This padding provides space for the button.
-		.style("padding-right", "1.5em")
-		.append("span")
-		.classed("resize-dialogue", true)
-		.html("⇘")
-		.call(
-		    d3.behavior.drag()
-			.origin(function() {
-			    var el = d3.select(this.parentNode);
-			    
-			    originalBBox = el.node().getBoundingClientRect();
-			    originalCSS = [
-				parseInt(el.style("width")) || 0,
-				parseInt(el.style("height")) || 0
-			    ];
-			    dragDistance = null;
-			    
-			    return {
-				x: 0,
-				y: 0
-			    };
-			})
-			.on("dragstart", function(d) {
-			    d3.event.sourceEvent.stopPropagation();
-			})
-			.on("drag", function(d) {
-			    // Accumulated change over this whole drag gesture.
-			    var el = d3.select(this.parentNode),
-				dragDistance = [d3.event.x, d3.event.y],
-				translated = {
-				    left: originalBBox.left,
-				    top: originalBBox.top,
-				    right: originalBBox.right + dragDistance[0],
-				    bottom: originalBBox.bottom + dragDistance[1],
-				    width: originalBBox.width + dragDistance[0],
-				    height: originalBBox.height + dragDistance[1]
+		    .classed("resize-dialogue", true)
+		    .html("⇘")
+		    .call(
+			d3.behavior.drag()
+			    .origin(function() {
+				var el = d3.select(this.parentNode);
+				
+				originalBBox = el.node().getBoundingClientRect();
+				originalCSS = [
+				    parseInt(el.style("width")) || 0,
+				    parseInt(el.style("height")) || 0
+				];
+				dragDistance = null;
+				
+				return {
+				    x: 0,
+				    y: 0
 				};
+			    })
+			    .on("dragstart", function(d) {
+				d3.event.sourceEvent.stopPropagation();
+			    })
+			    .on("drag", function(d) {
+				// Accumulated change over this whole drag gesture.
+				var el = d3.select(this.parentNode),
+				    dragDistance = [d3.event.x, d3.event.y],
+				    translated = {
+					left: originalBBox.left,
+					top: originalBBox.top,
+					right: originalBBox.right + dragDistance[0],
+					bottom: originalBBox.bottom + dragDistance[1],
+					width: originalBBox.width + dragDistance[0],
+					height: originalBBox.height + dragDistance[1]
+				    };
 
-			    maybeDock(
-				el.datum().id,
-				translated,
-				noop,
-				noop,
-				function(deltaRight) {
-				    dragDistance[0] += deltaRight;
-				},
-				function(deltaTop) {
-				    dragDistance[1] += deltaTop;
+				maybeDock(
+				    el.datum().id,
+				    translated,
+				    noop,
+				    noop,
+				    function(deltaRight) {
+					dragDistance[0] += deltaRight;
+				    },
+				    function(deltaTop) {
+					dragDistance[1] += deltaTop;
+				    }
+				);
+				
+				drawSize(
+				    d3.select(this.parentNode),
+				    true,
+				    originalCSS[0] + dragDistance[0],
+				    originalCSS[1] + dragDistance[1],
+				    translated
+				);
+			    })
+			    .on("dragend", function(d) {
+				if (dragDistance) {
+				    getDataById(d.id)
+					.setSize([
+					    originalCSS[0] + dragDistance[0],
+					    originalCSS[1] + dragDistance[1]
+					]);
 				}
-			    );
-			    
-			    drawSize(
-				d3.select(this.parentNode),
-				true,
-				originalCSS[0] + dragDistance[0],
-				originalCSS[1] + dragDistance[1],
-				translated
-			    );
-			})
-			.on("dragend", function(d) {
-			    if (dragDistance) {
-				getDataById(d.id)
-				    .setSize([
-					originalCSS[0] + dragDistance[0],
-					originalCSS[1] + dragDistance[1]
-				    ]);
-			    }
-			})
-		);
-	}
+			    })
+		    );
+	    }
 
-	if (options.bringToFront) {
-	    newDialogues
-	    // This padding prevents us from make the box too small to resize.
-		.style("padding-bottom", "3em")
-		.style("padding-right", "1.5em")
-		.append("span")
-		.classed("bring-to-front", true)
-		.text("TOP")
-		.on("click", function(d, i) {
-		    d3.select(this.parentNode)
-			.style("z-index", getNextZ());
+	    if (options.bringToFront) {
+		newDialogues
+		// This padding prevents us from make the box too small to resize.
+		    .style("padding-bottom", "3em")
+		    .style("padding-right", "1.5em")
+		    .append("span")
+		    .classed("bring-to-front", true)
+		    .text("TOP")
+		    .on("click", function(d, i) {
+			d3.select(this.parentNode)
+			    .style("z-index", getNextZ());
+		    });
+	    }
+
+	    dialogues
+		.each(function(d, i) {
+		    drawSizeAndPosition(d3.select(this), d);
 		});
-	}
 
-	dialogues
-	    .each(function(d, i) {
-		drawSizeAndPosition(d3.select(this), d);
-	    });
+	    drawDialogueContent(dialogues, newDialogues);
 
-	if (options.findSpace) {
-	    dialogues.each(function(d, i) {
-		maybeFindSpace(d3.select(this), d);
-	    });
-	}	
-
-	return {
-	    dialogues: dialogues,
-	    newDialogues: newDialogues
+	    if (options.findSpace) {
+		dialogues.each(function(d, i) {
+		    maybeFindSpace(d3.select(this), d);
+		});
+	    }	    
 	};
+
+    return {
+	id: dialogueId,
+	
+	fromData: function(data) {
+	    var dialogues = container.selectAll("." + typeId)
+		    .data(
+			data,
+			function(d, i) {
+			    return d.id;
+			}
+		    );
+
+	    dialogues.exit().remove();
+
+	    fromSelection(dialogues, dialogues.enter());
+	},
+
+	fromSelection: fromSelection
     };
 };

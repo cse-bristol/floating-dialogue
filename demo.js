@@ -10,21 +10,7 @@ var d3 = require("d3"),
 	return data[id];
     },
 
-    redraw = function() {
-	var dialogues = fact.draw(data);
-	dialogues.newDialogues
-	    .style("border", "1px solid red")
-	    .style("background-color", function(d, i) {
-		return ["pink", "green"][i];
-	    });
-	
-	fact.buttons(buttons, newButtons);
-    },
-
     fact = dialogue(
-	body,
-	getData,
-	redraw,
 	"demo-dialogue",
 	{
 	    reposition: true,
@@ -34,6 +20,32 @@ var d3 = require("d3"),
 	    bringToFront: true,
 	    findSpace: true,
 	    lockToScreen: true
+	}
+    ),
+
+    drawing = fact.drawing(
+	getData,
+	body,
+	function(dialogues, newDialogues) {
+	    newDialogues
+		.style("border", "1px solid red")
+		.style("background-color", function(d, i) {
+		    return ["pink", "green"][i];
+		});
+	},
+	function(buttons, newButtons) {
+	    newButtons
+		.text(function(d, i) {
+		    return "Open/Close Button " + d.id;
+		})
+		.style("right", "1vw")
+		.style("top", function(d, i) {
+		    return (1 + (d.id * 2)) + "em";
+		})
+		.style("position", "absolute");
+	},
+	function(parentDatum) {
+	    return parentDatum;
 	}
     ),
 
@@ -50,20 +62,13 @@ var d3 = require("d3"),
 	})	
     ],
 
-    buttons = body.selectAll("div.button")
-	.data(data),
+    buttonContainers = body.selectAll("div.button")
+	.data(data);
 
-    newButtons = buttons
-	.enter()
-	.append("div")
-	.classed("button", true)
-	.text(function(d, i) {
-	    return "Open/Close Button " + i;
-	})
-	.style("right", "1vw")
-	.style("top", function(d, i) {
-	    return (1 + (i * 2)) + "em";
-	})
-	.style("position", "absolute");
+buttonContainers.enter().append("div");	
 
-redraw();
+drawing.dialogues(data);
+drawing.buttons(buttonContainers);
+	
+
+
