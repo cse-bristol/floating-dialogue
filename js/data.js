@@ -9,7 +9,11 @@ module.exports = function(options) {
 	    onPositionChanged;
 
 	if (visible === undefined) {
-	    visible = true;
+	    if (options.initialVisibility === undefined) {
+		visible = true;
+	    } else {
+		visible = options.initialVisibility;
+	    }
 	}
 	
 	return {

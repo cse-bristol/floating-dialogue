@@ -22,6 +22,7 @@ var d3 = require("d3"),
  + sticky (boolean) adds stickyness/snapping/docking behaviour towards other dialogues when being moved or resized
  + findSpace (boolean) causes new dialogues to attempt to find a free space which do not overlap another dialogues (unless they have a specific manual position already)
  + lockToScreen (boolean) locks the dialogue to fit inside the browser window when moving or resizing
+ + initialVisibility (boolean) determines whether or not the dialogue is visible by default.
  */
 module.exports = function(typeId, options) {
     var dataFactory = createData(options);
@@ -86,3 +87,4 @@ module.exports = function(typeId, options) {
 	}
     };
 };
+    
