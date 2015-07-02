@@ -56,6 +56,10 @@ module.exports = function(typeId, options) {
 		    return state.serialize();
 		},
 
+		getState: function() {
+		    return state;
+		},
+
 		drawing: function(dialogueContainer, drawDialogueContent, buttonContainer, drawButtonContent) {
 		    var getDataById = function() {
 			return state;
