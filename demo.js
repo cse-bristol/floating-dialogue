@@ -10,6 +10,39 @@ var d3 = require("d3"),
 	return data[id];
     },
 
+    singleFact = dialogue(
+    	"single-dialogue",
+    	{
+    	    reposition: true,
+    	    resize: true,
+    	    close: true,
+    	    sticky: true,
+    	    bringToFront: true,
+    	    findSpace: true,
+    	    lockToScreen: true,
+    	    initialVisibility: false	    
+    	}
+    ).single(),
+
+    singleDrawing = singleFact.drawing(
+    	body,
+    	function(dialogues, newDialogues) {
+    	    newDialogues
+    		.style("border", "1px solid red")
+    		.style("background-color", "orange")
+    		.text("Single Dialogue");
+    	},
+    	body,
+    	function(buttons, newButtons) {
+    	    newButtons
+    		.text("Open/Close Button for single dialogue")
+    		.classed("single-button", true)
+    		.style("position", "absolute")
+    		.style("right", "1vw")
+    		.style("bottom", "1em");
+    	}
+    ),
+
     fact = dialogue(
 	"demo-dialogue",
 	{
@@ -50,12 +83,12 @@ var d3 = require("d3"),
     ),
 
     data = [
-	fact.loadData({
+	fact.deserialize({
 	    id: 0,
 	    size: [200, 200],
 	    visible: true
 	}),
-	fact.loadData({
+	fact.deserialize({
 	    id: 1,
 	    size: [200, 100],
 	    visible: true
@@ -65,10 +98,12 @@ var d3 = require("d3"),
     buttonContainers = body.selectAll("div.button")
 	.data(data);
 
-buttonContainers.enter().append("div");	
+buttonContainers.enter().append("div")
+    .classed("button", true);	
 
 drawing.dialogues(data);
 drawing.buttons(buttonContainers);
-	
 
-
+singleFact.load({
+    size: [300, 300]
+});

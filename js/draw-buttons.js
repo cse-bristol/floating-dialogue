@@ -9,7 +9,7 @@ var classes = require("./classes.js"),
 
 module.exports = function(getDataById, redraw, typeId, drawButtonContent, getDataFromParent) {
     var buttonId = function(d) {
-	return typeId + "-button-" + d.id;
+	return typeId + "-button" + (d.id ? ("-" + d.id) : "");
     },
 	
 	/*
@@ -23,6 +23,7 @@ module.exports = function(getDataById, redraw, typeId, drawButtonContent, getDat
 	    newButtons = newButtons
 		.append("div")
 		.classed(openButtonClass, true)
+		.classed(typeId + "-button", true)
 		.attr("id", buttonId)
 		.on("click", function(d, i) {
 		    var data = getDataById(d.id);
@@ -44,7 +45,7 @@ module.exports = function(getDataById, redraw, typeId, drawButtonContent, getDat
 	fromSelection: fromSelection,
 
 	fromParentSelection: function(parentSelection) {
-	    var buttons = parentSelection.selectAll("." + openButtonClass)
+	    var buttons = parentSelection.selectAll("." + typeId + "-button")
 		    .data(function(d, i) {
 			return [
 			    getDataFromParent(d)

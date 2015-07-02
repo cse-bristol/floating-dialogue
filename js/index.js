@@ -34,12 +34,54 @@ module.exports = function(typeId, options) {
 	 Create the underlying data for 1 dialogue of this type.
 	 */
 	createData: dataFactory.create,
+
+	deserialize: dataFactory.load,
+
 	/*
 	 Get the data for 1 dialogue of this type from serialized form.
 	 */
-	loadData: dataFactory.load,
+	single: function() {
+	    var state = dataFactory.create(),
+		loaded = null;
+	    
+	    return {
+		load: function(data) {
+		    state = dataFactory.load(data);
+		    if (loaded) {
+			loaded();
+		    }
+		},
+
+		save: function() {
+		    return state.serialize();
+		},
+
+		drawing: function(dialogueContainer, drawDialogueContent, buttonContainer, drawButtonContent) {
+		    var getDataById = function() {
+			return state;
+		    },
+			update = function() {
+			    drawDialogues.fromData([state]);
+			    if (drawButtons) {
+			    	drawButtons.fromParentSelection(buttonContainer);
+			    }
+			},
+			
+			drawDialogues = drawDialoguesFactory(dialogueContainer, getDataById, update, typeId, options, drawDialogueContent),
+			drawButtons = buttonContainer ? drawButtonsFactory(getDataById, update, typeId, drawButtonContent, getDataById) : null;
+
+		    loaded = update;
+		    
+		    return {
+			update: update
+		    };
+		}
+	    };
+	},
 
 	/*
+	 Call this when you want to draw multiple dialogues of the same kind based on some data.
+
 	 getDataById is a way to lookup the most up-to-data date for a dialogue. This is used when we want to modify that data.
 
 	 dialogueContainer is the object the dialogues will be drawn inside.

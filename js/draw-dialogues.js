@@ -243,8 +243,11 @@ module.exports = function(container, getDataById, redraw, typeId, options, drawD
 	    }
 	},
 
+	/*
+	 'typeId-dialogueId' if dialogue is present, otherwise just 'typeId'
+	 */
 	dialogueId = function(d) {
-	    return typeId + "-" + d.id;
+	    return typeId + (d.id ? ("-" + d.id) : "");
 	},
 
 	fromSelection = function(dialogues, newDialogues) {
@@ -456,7 +459,7 @@ module.exports = function(container, getDataById, redraw, typeId, options, drawD
 		    .data(
 			data,
 			function(d, i) {
-			    return d.id;
+			    return d.id || "";
 			}
 		    );
 
