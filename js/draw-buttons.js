@@ -2,7 +2,8 @@
 
 /*global module, require*/
 
-var classes = require("./classes.js"),
+var d3 = require("d3"),
+    classes = require("./classes.js"),
     hideClass = classes.hide,
     openButtonClass = "open-button";
 
@@ -26,6 +27,11 @@ module.exports = function(getDataById, redraw, typeId, drawButtonContent, getDat
 		.classed(typeId + "-button", true)
 		.attr("id", buttonId)
 		.on("click", function(d, i) {
+		    /*
+		     Stop clicks from affecting our parent elements.
+		    */
+		    d3.event.stopPropagation();
+		    
 		    var data = getDataById(d.id);
 		    
 		    data.setVisibility(!d.getVisibility());
