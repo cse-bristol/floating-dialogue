@@ -15,8 +15,8 @@
 
 .floating-dialogue {
     position: absolute;
-    min-width: 3em;
-    min-height: 3em;
+    min-width: 1em;
+    min-height: 1em;
     left: 0;
     top: 0;
 }
