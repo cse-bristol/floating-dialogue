@@ -68,7 +68,7 @@
     font-family: monospace;
     font-wieght: bold;
     position: absolute;
-    left: 0.3em;
+    right: 0.3em;
     bottom: 0.2em;
     cursor: pointer;
     visibility: hidden;
