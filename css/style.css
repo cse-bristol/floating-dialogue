@@ -25,6 +25,10 @@
     visibility: hidden;
 }
 
+.floating-dialogue:hover .close-button {
+    visibility: visible;
+}
+
 .close-button {
     font-size: x-large;
     font-family: monospace;
@@ -32,6 +36,7 @@
     top: 0;
     right:5px;
     cursor: pointer;
+    visibility: hidden;
 }
 
 .resize-dialogue {
@@ -42,6 +47,10 @@
     right: 5px;
 }
 
+.floating-dialogue:hover .bring-to-front {
+    visibility: visible;
+}
+
 .bring-to-front {
     font-family: monospace;
     font-wieght: bold;
@@ -49,4 +58,5 @@
     right: 2em;
     bottom: 0.2em;
     cursor: pointer;
+    visibility: hidden;
 }
