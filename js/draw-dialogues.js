@@ -334,10 +334,15 @@ module.exports = function(container, getDataById, redraw, typeId, options, drawD
 	    }
 
 	    if (options.resize) {
-		var resizeBehaviour = d3.behavior.drag()
+		/*
+		 The accumulated total drag distance over the whole event.
+		 */
+		var dragDistance = null,
+		
+		    resizeBehaviour = d3.behavior.drag()
 			.origin(function() {
 			    var el = d3.select(this.parentNode);
-			    
+
 			    originalBBox = el.node().getBoundingClientRect();
 			    originalCSS = [
 				parseInt(el.style("width")) || 0,
@@ -354,9 +359,9 @@ module.exports = function(container, getDataById, redraw, typeId, options, drawD
 			    d3.event.sourceEvent.stopPropagation();
 			})
 			.on("drag", function(d) {
-			    // Accumulated change over this whole drag gesture.
+			    dragDistance = [d3.event.x, d3.event.y];
+			    
 			    var el = d3.select(this.parentNode),
-				dragDistance = [d3.event.x, d3.event.y],
 				translated = {
 				    left: originalBBox.left,
 				    top: originalBBox.top,
@@ -388,7 +393,7 @@ module.exports = function(container, getDataById, redraw, typeId, options, drawD
 			    );
 			})
 			.on("dragend", function(d) {
-			    if (dragDistance) {
+			    if (dragDistance && dragDistance[0] !== 0 && dragDistance[1] !== 0) {
 				getDataById(d.id)
 				    .setSize([
 					originalCSS[0] + dragDistance[0],
