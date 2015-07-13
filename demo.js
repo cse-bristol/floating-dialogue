@@ -10,6 +10,12 @@ var d3 = require("d3"),
 	return data[id];
     },
 
+    update = function() {
+	drawing.dialogues(data);
+	drawing.buttons(buttonContainers);
+	singleDrawing.update();
+    },
+
     singleFact = dialogue(
     	"single-dialogue",
     	{
@@ -28,18 +34,13 @@ var d3 = require("d3"),
     	body,
     	function(dialogues, newDialogues) {
     	    newDialogues
-    		.style("border", "1px solid red")
-    		.style("background-color", "orange")
+		.append("span")
     		.text("Single Dialogue");
     	},
     	body,
     	function(buttons, newButtons) {
     	    newButtons
-    		.text("Open/Close Button for single dialogue")
-    		.classed("single-button", true)
-    		.style("position", "absolute")
-    		.style("right", "1vw")
-    		.style("bottom", "1em");
+    		.text("Open/Close Button for single dialogue");
     	}
     ),
 
@@ -61,21 +62,16 @@ var d3 = require("d3"),
 	body,
 	function(dialogues, newDialogues) {
 	    newDialogues
-		.style("border", "1px solid red")
-		.style("background-color", function(d, i) {
-		    return ["pink", "green"][i];
-		});
+		.append("span")
+		.text(function(d, i) {
+		return "Multi dialogue " + i;
+	    });
 	},
 	function(buttons, newButtons) {
 	    newButtons
 		.text(function(d, i) {
 		    return "Open/Close Button " + d.id;
-		})
-		.style("right", "1vw")
-		.style("top", function(d, i) {
-		    return (1 + (d.id * 2)) + "em";
-		})
-		.style("position", "absolute");
+		});
 	},
 	function(parentDatum) {
 	    return parentDatum;
@@ -95,15 +91,23 @@ var d3 = require("d3"),
 	})	
     ],
 
-    buttonContainers = body.selectAll("div.button")
+    buttonList = body.append("div")
+	.attr("id", "button-list"),
+
+    buttonContainers = buttonList.selectAll("div.button")
 	.data(data);
 
 buttonContainers.enter().append("div")
-    .classed("button", true);	
+    .classed("button", true);
 
-drawing.dialogues(data);
-drawing.buttons(buttonContainers);
+body.append("div")
+    .attr("id", "redraw")
+    .classed("open-button", true)
+    .text("Redraw")
+    .on("click", update);
 
 singleFact.load({
     size: [300, 300]
 });
+
+update();
