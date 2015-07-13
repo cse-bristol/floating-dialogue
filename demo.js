@@ -26,7 +26,7 @@ var d3 = require("d3"),
     	    bringToFront: true,
     	    findSpace: true,
     	    lockToScreen: true,
-    	    initialVisibility: false	    
+    	    initialVisibility: false
     	}
     ).single(),
 
