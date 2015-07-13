@@ -129,6 +129,8 @@ module.exports = function(options) {
 		if (visible !== undefined) {
 		    serialized.visible = visible;
 		}
+
+		return serialized;
 	    }
 	};
     };
