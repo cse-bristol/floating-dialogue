@@ -139,7 +139,11 @@ module.exports = function(container, getDataById, redraw, typeId, options, drawD
 
 	maybeFindSpace = function(el, d) {
 	    if (!d.manuallyPositioned()) {
-		var dialogues = d3.selectAll("." + dialogueClass),
+		var dialogues = d3.selectAll("." + dialogueClass)
+			.filter(function(otherData, i) {
+			    return d.id !== otherData.id
+				&& otherData.getVisibility();
+			}),
 		    directionVector = [0, 1],
 	    	    len = dialogues.size(),
 	    	    i = 0,
