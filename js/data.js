@@ -7,7 +7,7 @@ module.exports = function(options) {
 	var onVisibilityChanged,
 	    onSizeChanged,
 	    onPositionChanged;
-
+	
 	if (visible === undefined) {
 	    if (options.initialVisibility === undefined) {
 		visible = true;
@@ -75,7 +75,7 @@ module.exports = function(options) {
 
 	    getTop: function() {
 		if (position !== undefined) {
-		    return position[0];
+		    return position[1];
 		} else {
 		    throw new Error("Cannot get top position for auto-positioned dialogue " + id);
 		}
@@ -123,7 +123,7 @@ module.exports = function(options) {
 		}
 
 		if (position !== undefined) {
-		    options.position = position;
+		    serialized.position = position;
 		}
 
 		if (visible !== undefined) {

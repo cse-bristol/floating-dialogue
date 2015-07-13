@@ -328,10 +328,10 @@ module.exports = function(container, getDataById, redraw, typeId, options, drawD
 			    .on("dragend", function(d, i) {
 				if (dragDistance) {
 				    getDataById(d.id)
-					.setPosition([
+					.setPosition(
 					    originalCSS[0] + dragDistance[0],
 					    originalCSS[1] + dragDistance[1]
-					]);
+					);
 				}
 			    })
 		    );
@@ -399,10 +399,10 @@ module.exports = function(container, getDataById, redraw, typeId, options, drawD
 			.on("dragend", function(d) {
 			    if (dragDistance && dragDistance[0] !== 0 && dragDistance[1] !== 0) {
 				getDataById(d.id)
-				    .setSize([
+				    .setSize(
 					originalCSS[0] + dragDistance[0],
 					originalCSS[1] + dragDistance[1]
-				    ]);
+				    );
 			    }
 			});
 		

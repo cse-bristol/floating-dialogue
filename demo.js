@@ -110,4 +110,8 @@ singleFact.load({
     size: [300, 300]
 });
 
+singleFact.load(
+    singleFact.save()
+);
+
 update();
