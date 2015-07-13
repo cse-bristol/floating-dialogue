@@ -56,6 +56,13 @@ module.exports = function(typeId, options) {
 		    return state.serialize();
 		},
 
+		reset: function() {
+		    state = dataFactory.create();
+		    if (loaded) {
+			loaded();
+		    }
+		},
+
 		getState: function() {
 		    return state;
 		},
