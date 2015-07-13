@@ -107,7 +107,8 @@ body.append("div")
     .on("click", update);
 
 singleFact.load({
-    size: [300, 300]
+    size: [300, 300],
+    position: [window.innerWidth, window.innerHeight]
 });
 
 singleFact.load(

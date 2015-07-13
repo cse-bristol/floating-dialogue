@@ -49,7 +49,10 @@ module.exports = function(container, getDataById, redraw, typeId, options, drawD
      Sets the size and position of the dialogue element based on the data.
      */
     var drawSizeAndPosition = function(el, datum) {
-	var bbox = (options.lockToScreen || options.findSpace) ? el.node().getBoundingClientRect() : null,
+	var maybeBBox = function() {
+	    return (options.lockToScreen || options.findSpace) ? el.node().getBoundingClientRect() : null;
+	},
+	    bbox = maybeBBox(),
 	    manuallyPositioned = datum.manuallyPositioned(),
 	    manuallySized = datum.manuallySized();
 
@@ -60,6 +63,8 @@ module.exports = function(container, getDataById, redraw, typeId, options, drawD
 	    manuallySized ? datum.getHeight() : null,
 	    bbox
 	);
+
+	bbox = maybeBBox();
 
 	drawPosition(
 	    el,
