@@ -142,57 +142,103 @@ module.exports = function(container, getDataById, redraw, typeId, options, drawD
 	    }
 	},
 
-	maybeFindSpace = function(el, d) {
-	    if (!d.manuallyPositioned()) {
-		var dialogues = d3.selectAll("." + dialogueClass)
-			.filter(function(otherData, i) {
-			    return d.id !== otherData.id
-				&& otherData.getVisibility();
-			}),
-		    directionVector = [0, 1],
-	    	    len = dialogues.size(),
-	    	    i = 0,
-		    bbox = el.node().getBoundingClientRect(),
+	tryFindSpaceInDirection = function(el, directionVector, dialogues, len, x, y) {
+	    var i = 0,
+		lastI = null,
+		bbox = el.node().getBoundingClientRect();
 
-	    	    x = parseInt(el.style("left")) || 0,
-	    	    y = parseInt(el.style("top")) || 0;		
+	    while (i < len) {
+	    	var dialogue = d3.select(dialogues[0][i]);
 
-	    	while (i < len) {
-	    	    var dialogue = d3.select(dialogues[0][i]);
+	    	if (el.datum().id !== dialogue.datum().id) {
+	    	    var target = dialogue.node().getBoundingClientRect();
 
-	    	    if (el.datum().id !== dialogue.datum().id) {
-	    		var target = dialogue.node().getBoundingClientRect();
+	    	    if (intersects(bbox, target)) {
+			if (lastI === i) {
+			    // We've collided with the same box twice in a row - we can't find a space in this direction.
+			    return false;
+			}
+			
+	    		// Move far enough to avoid the box we're colliding with.
+	    		var dx = directionVector[0] >= 0 ? (target.right - bbox.left) : (target.left - bbox.right),
+	    		    dy = directionVector[1] >= 0 ? (target.bottom - bbox.top) : (target.right - bbox.left);
 
-	    		if (intersects(bbox, target)) {
-	    		    // Move far enough to avoid the box we're colliding with.
-	    		    var dx = directionVector[0] >= 0 ? (target.right - bbox.left) : (target.left - bbox.right),
-	    			dy = directionVector[1] >= 0 ? (target.bottom - bbox.top) : (target.right - bbox.left);
+	    		// Add a little clearance.
+	    		dx += 1;
+	    		dy += 1;
 
-	    		    // Add a little clearance.
-	    		    dx += 1;
-	    		    dy += 1;
+	    		// Make sure we're going in the right direction.
+	    		dx *= directionVector[0];
+	    		dy *= directionVector[1];
 
-	    		    // Make sure we're going in the right direction.
-	    		    dx *= directionVector[0];
-	    		    dy *= directionVector[1];
+	    		x += dx;
+	    		y += dy;
 
-	    		    x += dx;
-	    		    y += dy;
+			drawPosition(el, true, x, y, bbox);
 
-	    		    el
-	    			.style("left", x + "px")
-	    			.style("top", y + "px")
-	    			.style("right", null)
-	    			.style("bottom", null);
-			    
-	    		    bbox = el.node().getBoundingClientRect();
-	    		    i = 0;
-	    		}
+	    		bbox = el.node().getBoundingClientRect();
+			
+			lastI = i;
+	    		i = 0;
 	    	    }
 
-	    	    i++;
+		    i++;
+	    	}
+	    }
+
+	    // Successfully found a space.
+	    return true;
+	},
+
+	findSpace = function(el, d, stillToMoveIds) {
+	    var dialogues = d3.selectAll("." + dialogueClass)
+		    .filter(function(otherData, i) {
+			return !stillToMoveIds.has(otherData.id)
+			    && otherData.getVisibility();
+		    }),
+	    	dialogueLen = dialogues.size(),
+		
+		directionVectors = [
+		    [1, 0],
+		    [0, 1],
+		    [-1, 0],
+		    [0, -1]
+		],
+		directionsLen = directionVectors.length,
+
+	    	x = parseInt(el.style("left")) || 0,
+	    	y = parseInt(el.style("top")) || 0;
+
+	    for (var i = 0; i < directionsLen; i++) {
+		if (tryFindSpaceInDirection(el, directionVectors[i], dialogues, dialogueLen, x, y)) {
+		    // We found a stable position
+		    return;
+		} else {
+		    // Go back to our original position - we'll try finding a space in a different direction.
+		    drawPosition(el, false, x, y, null);			
 		}
 	    }
+	},
+
+	maybeFindSpace = function(selection) {
+	    var toMove = selection.filter(function(d, i) {
+		return !d.manuallyPositioned();
+	    }),
+		unmoved = d3.set(
+		    toMove[0].map(function(dialogueNode) {
+			return dialogueNode.__data__.id;
+		    })
+		);
+
+	    toMove.each(function(d, i) {
+		findSpace(
+		    d3.select(this),
+		    d,
+		    unmoved
+		);
+
+		unmoved.remove(d.id);
+	    });
 	},
 
 	enlarge = function(bbox) {
@@ -456,9 +502,7 @@ module.exports = function(container, getDataById, redraw, typeId, options, drawD
 	    drawDialogueContent(dialogues, newDialogues);
 
 	    if (options.findSpace) {
-		dialogues.each(function(d, i) {
-		    maybeFindSpace(d3.select(this), d);
-		});
+		maybeFindSpace(dialogues);
 	    }	    
 	};
 

@@ -88,7 +88,14 @@ var d3 = require("d3"),
 	    id: 1,
 	    size: [200, 100],
 	    visible: true
-	})	
+	}),
+	fact.deserialize({
+	    id: 2,
+	    // This dialogue is sized such that it should be laid out in a different direction to the others.
+	    size: [window.innerWidth - 100, 200],
+	    visible: true
+	})
+	
     ],
 
     buttonList = body.append("div")
